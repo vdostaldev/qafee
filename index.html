@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kavárna kvíz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: draft, mechanics first, graphics come later
+   IDEA: a small breakfast café run by answering questions
+   PICTURE: the game itself (tickets, stock, shop)
+   COLOUR and TYPE: white/ink, tomato accent, Rubik
+   LAYOUT: one column, phone first */
+:root{color-scheme:light dark;--bg:light-dark(#fff,#16140f);--ink:light-dark(#1d1b18,#f2efe8);--mut:light-dark(#6b665d,#a7a196);--line:light-dark(#e3ded4,#34302a);--card:light-dark(#f6f3ee,#211e18);--acc:#d9412b;--ok:#2f8a57;--bad:#c8342a}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Rubik,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:40px;line-height:1.05;margin:24px 0 6px}
+h2{font-size:24px;margin:0 0 12px}
+p{margin:0 0 12px}.mut{color:var(--mut)}.small{font-size:14px}
+button,.btn{font:inherit;font-weight:500;min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:180px;resize:vertical}
+label{display:block;font-weight:500;margin:14px 0 6px}
+.menu{display:flex;flex-direction:column;gap:10px;margin-top:24px;max-width:420px}
+.menu button{text-align:left;padding:14px 18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.list{border-top:1px solid var(--line);margin:12px 0}
+.item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+.item .grow{flex:1}
+.tabs{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.status{min-height:24px;margin:10px 0;font-size:15px}
+.back{background:none;border:0;padding:8px 0;color:var(--mut)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.thumbs img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+/* game */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+.top .in{max-width:760px;margin:0 auto}
+.cash{font-size:30px;font-weight:700;line-height:1}
+.meta{font-size:14px;color:var(--mut)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--acc)}
+.nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.nav button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.badge{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--acc);color:#fff;font-size:13px}
+.tables{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.table{border:1px solid var(--line);border-radius:12px;padding:10px;min-height:150px;background:var(--card);font-size:15px}
+.plates{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px}
+.plate{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:78px;border-radius:50%;aspect-ratio:1;padding:6px;text-align:center}
+.plate b{font-size:20px;line-height:1}.plate span{font-size:13px;line-height:1.1}
+.plate.low{border-color:var(--bad)}
+@media(max-width:520px){.table{padding:8px;font-size:13px}.order button{padding:6px;min-height:36px;font-size:13px}.plates{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.table.empty{display:grid;place-items:center;color:var(--mut);background:none;border-style:dashed}
+.order{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.order button{display:flex;justify-content:space-between;text-align:left;padding:8px 10px;min-height:40px}
+.order button.done{text-decoration:line-through;opacity:.5}
+.order button.short{border-color:var(--bad)}
+.pat{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.pat i{display:block;height:100%;background:var(--ok)}
+.stockrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{padding:4px 10px;border-radius:14px;border:1px solid var(--line);font-size:14px;white-space:nowrap}
+.chip.low{border-color:var(--bad);color:var(--bad)}
+.q{font-size:22px;font-weight:500;margin:18px 0 14px;line-height:1.3}
+.ans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ans button{min-height:76px;text-align:left;white-space:normal}
+.ans button.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.ans button.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.fb{min-height:28px;margin-top:12px;font-weight:500}
+.board{margin-top:10px;font-size:14px}
+.board .item{padding:6px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9;max-width:90vw}
+.toast.on{opacity:1}
+.code{font-size:52px;font-weight:700;letter-spacing:.08em;line-height:1}
+@media(max-width:520px){h1{font-size:32px}.ans{grid-template-columns:1fr}.ans button{min-height:56px}.cash{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<section class="scr" id="s-home"><div class="wrap">
+  <h1>Kavárna kvíz</h1>
+  <p class="mut">Odpovídej na otázky z vlastních poznámek, doplňuj zásoby a obsluhuj zákazníky.</p>
+  <div class="menu">
+    <button class="pri" data-go="single">Hrát sám</button>
+    <button data-go="host">Hostovat multiplayer</button>
+    <button data-go="join">Připojit se ke hře</button>
+    <button data-go="gen">Nová sada otázek z poznámek</button>
+    <button data-go="sets">Moje sady</button>
+  </div>
+  <p class="mut small" id="mp-note" style="margin-top:16px"></p>
+</div></section>
+
+<section class="scr" id="s-gen" hidden><div class="wrap">
+  <button class="back" data-go="home">← Zpět</button>
+  <h2>Nová sada z poznámek</h2>
+  <div class="tabs" id="gen-tabs">
+    <button aria-pressed="true" data-src="text">Vložit text</button>
+    <button aria-pressed="false" data-src="img">Fotky poznámek</button>
+  </div>
+  <div id="src-text-box">
+    <textarea id="src-text" placeholder="Sem vlož poznámky…"></textarea>
+  </div>
+  <div id="src-img-box" hidden>
+    <input type="file" id="src-img" accept="image/*" multiple>
+    <div class="thumbs" id="thumbs"></div>
+  </div>
+  <label for="q-count">Počet otázek</label>
+  <select id="q-count"><option>10</option><option selected>15</option><option>20</option><option>30</option></select>
+  <div class="row" style="margin-top:16px"><button class="pri" id="gen-btn">Vygenerovat otázky</button></div>
+  <div class="status" id="gen-status" role="status"></div>
+  <div id="draft" hidden>
+    <label for="draft-name">Název sady</label>
+    <input id="draft-name">
+    <div class="list" id="draft-list"></div>
+    <div class="row"><button class="pri" id="draft-save">Uložit sadu</button><button id="draft-play">Uložit a hrát</button></div>
+  </div>
+</div></section>
+
+<section class="scr" id="s-sets" hidden><div class="wrap">
+  <button class="back" data-go="home">← Zpět</button>
+  <h2>Moje sady</h2>
+  <div class="list" id="sets-list"></div>
+  <details style="margin-top:20px"><summary>Import sady (JSON)</summary>
+    <textarea id="imp-text" placeholder='{"name":"…","questions":[{"q":"…","a":["správná","špatná","špatná","špatná"]}]}'></textarea>
+    <div class="row" style="margin-top:8px"><button id="imp-btn">Importovat</button></div>
+  </details>
+</div></section>
+
+<section class="scr" id="s-setup" hidden><div class="wrap">
+  <button class="back" data-go="home">← Zpět</button>
+  <h2 id="setup-title">Nastavení hry</h2>
+  <div id="name-box" hidden><label for="host-name">Tvoje jméno</label><input id="host-name" maxlength="24"></div>
+  <label for="setup-set">Sada otázek</label>
+  <select id="setup-set"></select>
+  <label>Konec hry</label>
+  <div class="tabs" id="mode-tabs">
+    <button aria-pressed="true" data-mode="time">Na čas</button>
+    <button aria-pressed="false" data-mode="goal">Na peníze</button>
+  </div>
+  <select id="setup-val"></select>
+  <div class="row" style="margin-top:20px"><button class="pri" id="setup-go">Začít</button></div>
+  <div class="status" id="setup-status" role="status"></div>
+</div></section>
+
+<section class="scr" id="s-join" hidden><div class="wrap">
+  <button class="back" data-go="home">← Zpět</button>
+  <h2>Připojit se</h2>
+  <label for="join-name">Tvoje jméno</label><input id="join-name" maxlength="24">
+  <label for="join-code">Kód hry</label><input id="join-code" maxlength="4" autocapitalize="characters" style="text-transform:uppercase">
+  <div class="row" style="margin-top:20px"><button class="pri" id="join-go">Připojit</button></div>
+  <div class="status" id="join-status" role="status"></div>
+</div></section>
+
+<section class="scr" id="s-lobby" hidden><div class="wrap">
+  <p class="mut">Kód hry</p>
+  <div class="code" id="lobby-code"></div>
+  <p class="mut small" style="margin-top:10px">Spoluhráči musí mít tuhle stránku nasdílenou s přístupem, který umožňuje interakci (ne jen zobrazení).</p>
+  <p id="lobby-info"></p>
+  <h2 style="margin-top:20px">Hráči</h2>
+  <div class="list" id="lobby-list"></div>
+  <div class="row"><button class="pri" id="lobby-start" hidden>Spustit hru</button><button id="lobby-leave">Odejít</button></div>
+  <div class="status" id="lobby-status" role="status"></div>
+</div></section>
+
+<section class="scr" id="s-game" hidden>
+  <div class="top"><div class="in">
+    <div class="row" style="justify-content:space-between">
+      <div><div class="cash" id="g-cash">$0</div><div class="meta" id="g-meta"></div></div>
+      <button id="g-quit">Konec</button>
+    </div>
+    <div class="bar"><i id="g-bar" style="width:0"></i></div>
+    <div class="nav">
+      <button data-view="cafe" aria-pressed="false">Kavárna<span class="badge" id="b-cafe" hidden></span></button>
+      <button data-view="stock" aria-pressed="true">Zásoby</button>
+      <button data-view="shop" aria-pressed="false">Obchod</button>
+    </div>
+    <div class="board" id="g-board" hidden></div>
+  </div></div>
+  <div class="wrap" id="g-body"></div>
+</section>
+
+<section class="scr" id="s-end" hidden><div class="wrap">
+  <h2>Konec hry</h2>
+  <div class="cash" id="end-cash" style="font-size:52px"></div>
+  <div class="list" id="end-stats"></div>
+  <div id="end-board"></div>
+  <div class="row" style="margin-top:20px"><button class="pri" id="end-again">Hrát znovu</button><button data-go="home">Menu</button></div>
+</div></section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>'$'+Math.floor(n).toLocaleString('cs-CZ');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const cu=n=>{try{return window.claude&&window.claude.use?window.claude.use(n).then(x=>x,()=>null):Promise.resolve(null)}catch{return Promise.resolve(null)}};
+let toastT=0;
+const toast=t=>{const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),1600)};
+
+/* ---------- data ---------- */
+const DEMO={id:'demo',name:'Ukázka: Fotosyntéza',questions:[
+{q:'Kde v buňce probíhá fotosyntéza?',a:['V chloroplastech','V mitochondriích','V jádře','V ribozomech']},
+{q:'Který plyn rostlina při fotosyntéze přijímá?',a:['Oxid uhličitý','Kyslík','Dusík','Vodík']},
+{q:'Co vzniká jako vedlejší produkt fotosyntézy?',a:['Kyslík','Oxid uhličitý','Dusík','Metan']},
+{q:'Jak se jmenuje zelené barvivo rostlin?',a:['Chlorofyl','Hemoglobin','Karoten','Melanin']},
+{q:'Co je hlavním produktem fotosyntézy?',a:['Glukóza','Bílkoviny','Tuky','Vitamín C']},
+{q:'Kde probíhá světelná fáze?',a:['V tylakoidech','Ve stromatu','V cytoplazmě','V buněčné stěně']},
+{q:'Kde probíhá Calvinův cyklus?',a:['Ve stromatu','V tylakoidech','V jádře','Ve vakuole']},
+{q:'Které světlo rostliny využívají nejméně?',a:['Zelené','Červené','Modré','Fialové']},
+{q:'Kolik molekul CO₂ je potřeba na jednu glukózu?',a:['6','1','12','3']},
+{q:'Organismy, které si tvoří potravu fotosyntézou, jsou…',a:['Autotrofní','Heterotrofní','Parazitické','Saprofytické']}]};
+let sets=store.get('cafe.sets',[]);
+const allSets=()=>[...sets,DEMO];
+const saveSets=()=>store.set('cafe.sets',sets);
+
+const FOODS=[
+{id:'toast',n:'Toast',p:2,cost:0},{id:'cereal',n:'Cereálie',p:5,cost:60},{id:'yogurt',n:'Jogurt',p:12,cost:250},
+{id:'juice',n:'Džus',p:25,cost:700},{id:'waffle',n:'Vafle',p:50,cost:1800},{id:'pancake',n:'Palačinky',p:90,cost:4500},
+{id:'omelette',n:'Omeleta',p:160,cost:11000},{id:'croissant',n:'Croissant',p:280,cost:25000}];
+const food=id=>FOODS.find(f=>f.id===id);
+const MAXLVL=5;
+const price=(f,l)=>Math.round(f.p*(1+0.75*(l-1)));
+const upCost=(f,l)=>Math.round(f.p*20*Math.pow(l,1.7));
+const UPG=[
+{id:'tables',n:'Více stolů',d:v=>v+' stolů',vals:[3,4,5,6],cost:[300,1500,5000]},
+{id:'restock',n:'Větší dodávka',d:v=>'+'+v+' ks za správnou odpověď',vals:[5,8,12,17,24],cost:[200,800,2500,7000]},
+{id:'patience',n:'Pohodlné židle',d:v=>'trpělivost ×'+v,vals:[1,1.3,1.6,2],cost:[250,1000,4000]},
+{id:'traffic',n:'Reklama',d:v=>'zákazník zhruba každé '+(v/1000)+' s',vals:[5000,4000,3000,2200],cost:[400,1500,5000]}];
+const ABIL=[
+{id:'happy',n:'Šťastná hodinka',d:'2× peníze za objednávky na 30 s',cost:400},
+{id:'fill',n:'Velký nákup',d:'+10 ks od každého jídla',cost:300},
+{id:'freeze',n:'Káva zdarma',d:'zákazníkům 20 s neubývá trpělivost',cost:350}];
+const abCost=(a)=>Math.round(a.cost*Math.pow(1.6,G.ab[a.id]||0));
+
+/* ---------- navigation ---------- */
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.hidden=s.id!=='s-'+id);window.scrollTo(0,0)}
+let setupMode='single',mode='time',lastCfg=null;
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(!g)return;
+  const to=g.dataset.go;
+  if(to==='home'){if(mp)mpLeave();G=null;show('home');return}
+  if(to==='single'||to==='host'){setupMode=to;openSetup();return}
+  if(to==='sets'){renderSets();show('sets');return}
+  if(to==='join'){$('#join-name').value=store.get('cafe.name','');show('join');return}
+  show(to);
+});
+
+/* ---------- question generation ---------- */
+let src='text',imgs=[],draft=null;
+$('#gen-tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;src=b.dataset.src;
+  $('#gen-tabs').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('#src-text-box').hidden=src!=='text';$('#src-img-box').hidden=src!=='img'});
+$('#src-img').addEventListener('change',e=>{imgs=[...e.target.files].slice(0,8);
+  $('#thumbs').innerHTML='';for(const f of imgs){const im=new Image();im.src=URL.createObjectURL(f);im.alt='';$('#thumbs').append(im)}});
+async function shrink(f){try{const b=await createImageBitmap(f);const s=Math.min(1,1600/Math.max(b.width,b.height));
+  const c=document.createElement('canvas');c.width=b.width*s|0;c.height=b.height*s|0;c.getContext('2d').drawImage(b,0,0,c.width,c.height);
+  return await new Promise(r=>c.toBlob(x=>r(x||f),'image/jpeg',.85))}catch{return f}}
+function cleanSet(raw){const qs=(raw&&Array.isArray(raw.questions)?raw.questions:[]).map(x=>{
+  if(!x||typeof x.q!=='string'||!Array.isArray(x.a))return null;const a=x.a.filter(t=>typeof t==='string'&&t.trim()).map(t=>t.trim().slice(0,120));
+  if(a.length<2)return null;const c=Number.isInteger(x.c)&&x.c<a.length?x.c:0;if(c){const t=a[c];a.splice(c,1);a.unshift(t)}
+  return{q:x.q.trim().slice(0,240),a:a.slice(0,4)}}).filter(Boolean);
+  return qs.length?{name:String(raw.name||raw.title||'Sada').slice(0,60),questions:qs}:null}
+$('#gen-btn').addEventListener('click',async()=>{
+  const st=$('#gen-status'),btn=$('#gen-btn');
+  const text=$('#src-text').value.trim(),useImg=src==='img'&&imgs.length;
+  if(src==='text'&&!text){st.textContent='Nejdřív vlož text poznámek.';return}
+  if(src==='img'&&!imgs.length){st.textContent='Nejdřív vyber fotky.';return}
+  const sample=await cu('sample');
+  if(!sample){st.textContent='Generování tu nejde. Otevři hru přímo na claude.ai.';return}
+  const n=+$('#q-count').value;
+  const opts={modelTier:'default'};
+  if(useImg){let lim=null;try{lim=await sample.limits()}catch{}
+    if(!lim||!lim.images){st.textContent='Fotky tu teď generovat nejdou, vlož poznámky jako text.';return}
+    opts.images=await Promise.all(imgs.map(shrink))}
+  const prompt=`Jsi generátor kvízových otázek pro studenta gymnázia. Z ${useImg?'přiložených fotek poznámek':'poznámek níže'} vytvoř přesně ${n} otázek s výběrem ze 4 odpovědí.
+Pravidla:
+- Ptej se jen na to, co v poznámkách opravdu je. Pokryj celé poznámky rovnoměrně, ne jen začátek.
+- Piš ve stejném jazyce jako poznámky.
+- Přesně jedna odpověď je správná. Tři chybné musí být věrohodné, ze stejné kategorie a podobně dlouhé jako správná.
+- Odpovědi max 60 znaků, otázka max 160 znaků. Žádné "všechny výše uvedené" ani "žádná z nich".
+- Mix typů: definice, fakta, příčina a následek, porovnání.
+Vrať jen JSON ve tvaru {"title":"krátký název tématu","questions":[{"q":"otázka","a":["SPRÁVNÁ","chybná","chybná","chybná"]}]}. Správná odpověď je vždy první v poli a.
+${useImg?'':'\nPOZNÁMKY:\n'+text.slice(0,30000)}`;
+  btn.disabled=true;st.textContent='Generuju otázky…';
+  try{const res=await sample.json(prompt,opts);const s=cleanSet(res);
+    if(!s){st.textContent='Z odpovědi se nepodařilo udělat otázky. Zkus to znovu.';return}
+    draft=s;$('#draft-name').value=s.name;renderDraft();$('#draft').hidden=false;st.textContent=`Hotovo: ${s.questions.length} otázek. Projdi je a smaž, co se nehodí.`}
+  catch(e){st.textContent=e&&e.code==='rate_limited'?'Moc požadavků, zkus to za chvíli.':e&&e.code==='not_granted'?'Generování nebylo povoleno.':'Generování selhalo. Zkus to znovu.'}
+  finally{btn.disabled=false}
+});
+function renderDraft(){$('#draft-list').innerHTML=draft.questions.map((q,i)=>`<div class="item"><div class="grow"><b>${esc(q.q)}</b><div class="small mut">✓ ${esc(q.a[0])} · ${q.a.slice(1).map(esc).join(' · ')}</div></div><button data-del="${i}" aria-label="Smazat otázku">Smazat</button></div>`).join('')}
+$('#draft-list').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;draft.questions.splice(+b.dataset.del,1);renderDraft()});
+function saveDraft(){if(!draft||!draft.questions.length)return null;const s={id:'s'+Date.now(),name:$('#draft-name').value.trim()||draft.name,questions:draft.questions};
+  sets.unshift(s);saveSets();draft=null;$('#draft').hidden=true;$('#gen-status').textContent='';return s}
+$('#draft-save').addEventListener('click',()=>{if(saveDraft()){toast('Sada uložena');renderSets();show('sets')}});
+$('#draft-play').addEventListener('click',()=>{const s=saveDraft();if(s){setupMode='single';openSetup(s.id)}});
+
+/* ---------- sets ---------- */
+function renderSets(){$('#sets-list').innerHTML=allSets().map(s=>`<div class="item"><div class="grow"><b>${esc(s.name)}</b><div class="small mut">${s.questions.length} otázek</div></div>
+  <div class="row"><button data-play="${esc(s.id)}">Hrát</button><button data-exp="${esc(s.id)}">Kopírovat JSON</button>${s.id==='demo'?'':`<button data-rm="${esc(s.id)}">Smazat</button>`}</div></div>`).join('')}
+$('#sets-list').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.play){setupMode='single';openSetup(b.dataset.play)}
+  if(b.dataset.rm){sets=sets.filter(s=>s.id!==b.dataset.rm);saveSets();renderSets()}
+  if(b.dataset.exp){const s=allSets().find(x=>x.id===b.dataset.exp);navigator.clipboard.writeText(JSON.stringify({name:s.name,questions:s.questions})).then(()=>toast('Zkopírováno'),()=>toast('Kopírování nejde'))}});
+$('#imp-btn').addEventListener('click',()=>{let s=null;try{s=cleanSet(JSON.parse($('#imp-text').value))}catch{}
+  if(!s){toast('Neplatný JSON');return}sets.unshift({id:'s'+Date.now(),...s});saveSets();$('#imp-text').value='';renderSets();toast('Importováno')});
+
+/* ---------- setup ---------- */
+const VALS={time:[[3,'3 minuty'],[5,'5 minut'],[7,'7 minut'],[10,'10 minut']],goal:[[5000,'$5 000'],[10000,'$10 000'],[25000,'$25 000'],[50000,'$50 000']]};
+function fillVals(){$('#setup-val').innerHTML=VALS[mode].map(([v,t],i)=>`<option value="${v}"${i===1?' selected':''}>${t}</option>`).join('')}
+function openSetup(pick){
+  $('#setup-title').textContent=setupMode==='host'?'Nová multiplayer hra':'Hra pro jednoho';
+  $('#name-box').hidden=setupMode!=='host';$('#host-name').value=store.get('cafe.name','');
+  $('#setup-set').innerHTML=allSets().map(s=>`<option value="${esc(s.id)}"${s.id===pick?' selected':''}>${esc(s.name)} (${s.questions.length})</option>`).join('');
+  $('#setup-go').textContent=setupMode==='host'?'Vytvořit hru':'Začít';$('#setup-status').textContent='';
+  fillVals();show('setup')}
+$('#mode-tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;mode=b.dataset.mode;
+  $('#mode-tabs').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));fillVals()});
+$('#setup-go').addEventListener('click',()=>{
+  const set=allSets().find(s=>s.id===$('#setup-set').value);if(!set)return;
+  const cfg={set:{name:set.name,questions:set.questions},mode,val:+$('#setup-val').value};
+  if(setupMode==='single'){lastCfg=cfg;startGame(cfg);return}
+  const name=$('#host-name').value.trim();if(!name){$('#setup-status').textContent='Napiš své jméno.';return}
+  store.set('cafe.name',name);hostCreate(cfg,name)});
+
+/* ---------- game ---------- */
+let G=null,loop=0;
+const upv=id=>{const u=UPG.find(x=>x.id===id);return u.vals[G.up[id]]};
+function startGame(cfg){
+  G={set:cfg.set,mode:cfg.mode,goal:cfg.mode==='goal'?cfg.val:0,dur:cfg.val*60000,endsAt:cfg.mode==='time'?(cfg.endsAt||Date.now()+cfg.val*60000):0,
+    cash:0,stock:{toast:0},lvl:{toast:1},up:{tables:0,restock:0,patience:0,traffic:0},ab:{},happyUntil:0,freezeUntil:0,
+    cust:[],nextSpawn:Date.now()+2000,last:Date.now(),queue:[],q:null,answered:null,lockUntil:0,view:'stock',shopTab:'food',
+    stats:{ok:0,bad:0,served:0,left:0},mp:!!cfg.mp,over:false,uid:0,lastPush:0};
+  show('game');$('#g-board').hidden=!G.mp;nextQ();setView('stock');renderTop();
+  clearInterval(loop);loop=setInterval(tick,200)}
+function setView(v){G.view=v;document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===v));
+  ({cafe:renderCafe,stock:renderStock,shop:renderShop})[v]()}
+document.querySelector('.nav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b&&G)setView(b.dataset.view)});
+
+function tick(){if(!G||G.over)return;const now=Date.now(),dt=now-G.last;G.last=now;let changed=false;
+  if(now>G.freezeUntil)for(const c of G.cust)c.pat-=dt;
+  const n=G.cust.length;G.cust=G.cust.filter(c=>c.pat>0||(G.stats.left++,false));if(G.cust.length!==n){changed=true;if(G.view!=='cafe')toast('Zákazník odešel naštvaný')}
+  if(now>=G.nextSpawn){if(G.cust.length<upv('tables')){spawn();changed=true}G.nextSpawn=now+upv('traffic')*(0.7+Math.random()*0.6)}
+  if(G.view==='cafe'){changed?renderCafe():bars()}
+  if(G.view==='stock'&&G.answered!==null&&!G.q.opts[G.answered].ok){const b=$('#q-next');if(b&&b.disabled&&now>=G.lockUntil)b.disabled=false}
+  renderTop();
+  if(G.mp)mpTick(now);
+  if(G.mode==='time'&&now>=G.endsAt)endGame();
+  else if(G.mode==='goal'&&G.cash>=G.goal)endGame()}
+function spawn(){const un=FOODS.filter(f=>G.lvl[f.id]);
+  const k=1+(Math.random()*Math.min(3,un.length)|0);
+  // newer foods a bit more likely
+  const pool=shuffle(un.flatMap((f,i)=>Array(i+1).fill(f)));const pick=[];for(const f of pool){if(!pick.includes(f))pick.push(f);if(pick.length===k)break}
+  const used=new Set(G.cust.map(c=>c.seat));let seat=0;while(used.has(seat))seat++;
+  const max=(22000+Math.random()*8000)*upv('patience');
+  G.cust.push({id:++G.uid,seat,items:pick.map(f=>({id:f.id,q:1+(Math.random()*3|0),done:false})),pat:max,max})}
+function orderValue(c){return c.items.reduce((s,i)=>s+price(food(i.id),G.lvl[i.id])*i.q,0)}
+function serve(c,it){if(it.done)return true;if((G.stock[it.id]||0)<it.q)return false;G.stock[it.id]-=it.q;it.done=true;return true}
+function finish(c){if(!c.items.every(i=>i.done))return;let pay=orderValue(c);if(Date.now()<G.happyUntil)pay*=2;
+  G.cash+=pay;G.stats.served++;G.cust=G.cust.filter(x=>x!==c);toast('+'+fmt(pay))}
+
+function renderTop(){if(!G)return;$('#g-cash').textContent=fmt(G.cash);let pct;
+  if(G.mode==='time'){const left=Math.max(0,G.endsAt-Date.now()),s=Math.ceil(left/1000);$('#g-meta').textContent=`zbývá ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;pct=100-left/G.dur*100}
+  else{$('#g-meta').textContent=`cíl ${fmt(G.goal)}`;pct=G.cash/G.goal*100}
+  const fx=[];if(Date.now()<G.happyUntil)fx.push('2× peníze');if(Date.now()<G.freezeUntil)fx.push('trpělivost zamrzlá');
+  if(fx.length)$('#g-meta').textContent+=' · '+fx.join(' · ');
+  $('#g-bar').style.width=Math.min(100,Math.max(0,pct))+'%';
+  const b=$('#b-cafe');b.hidden=!G.cust.length;b.textContent=G.cust.length}
+
+function renderCafe(){const t=upv('tables');let h='<div class="tables">';
+  for(let s=0;s<t;s++){const c=G.cust.find(x=>x.seat===s);
+    if(!c){h+=`<div class="table empty">Volný stůl</div>`;continue}
+    h+=`<div class="table" data-c="${c.id}"><div class="row" style="justify-content:space-between"><b>Stůl ${s+1}</b><span class="small mut">${fmt(orderValue(c))}</span></div><div class="order">`+
+      c.items.map((it,i)=>{const f=food(it.id),short=!it.done&&(G.stock[it.id]||0)<it.q;
+        return `<button data-i="${i}" class="${it.done?'done':''}${short?' short':''}"><span>${esc(f.n)}</span><span>×${it.q}</span></button>`}).join('')+
+      `</div><div class="pat"><i style="width:${c.pat/c.max*100}%"></i></div></div>`}
+  h+='</div><div class="plates">'+FOODS.filter(f=>G.lvl[f.id]).map(f=>`<button class="plate${(G.stock[f.id]||0)<2?' low':''}" data-plate="${f.id}"><b>${G.stock[f.id]||0}</b><span>${esc(f.n)}</span></button>`).join('')+'</div>';
+  h+='<p class="small mut" style="margin-top:12px">Ťukni na talíř a jídlo dostane zákazník, který čeká nejdýl. Nebo ťukni přímo na položku v objednávce. Červeně = nemáš dost, jdi do Zásob.</p>';
+  $('#g-body').innerHTML=h}
+function bars(){for(const c of G.cust){const el=document.querySelector(`.table[data-c="${c.id}"] .pat i`);if(el){el.style.width=(c.pat/c.max*100)+'%';el.style.background=c.pat/c.max<.3?'var(--bad)':''}}}
+$('#g-body').addEventListener('click',e=>{if(!G||G.over)return;
+  if(G.view==='cafe'){const pl=e.target.closest('[data-plate]');
+    if(pl){const fid=pl.dataset.plate;const cands=G.cust.filter(c=>c.items.some(i=>i.id===fid&&!i.done)).sort((a,b)=>a.pat/a.max-b.pat/b.max);
+      if(!cands.length){toast('Nikdo si to teď neobjednal');return}const c=cands[0],it=c.items.find(i=>i.id===fid&&!i.done);
+      if(!serve(c,it)){toast(`Málo: ${food(fid).n}. Doplň zásoby.`);return}finish(c);renderCafe();renderTop();return}
+    const b=e.target.closest('.order button');if(!b)return;const c=G.cust.find(x=>x.id==b.closest('.table').dataset.c);if(!c)return;
+    const it=c.items[+b.dataset.i];if(!serve(c,it)){toast(`Málo: ${food(it.id).n}. Doplň zásoby.`);return}finish(c);renderCafe();renderTop();return}
+  if(G.view==='stock'){const a=e.target.closest('[data-a]');if(a){answer(+a.dataset.a);return}if(e.target.id==='q-next'){nextQ()}return}
+  if(G.view==='shop'){const tb=e.target.closest('[data-tab]');if(tb){G.shopTab=tb.dataset.tab;renderShop();return}const b=e.target.closest('[data-buy]');if(b)buy(b.dataset.buy)}});
+
+function nextQ(){if(!G.queue.length)G.queue=shuffle(G.set.questions.map((_,i)=>i));const q=G.set.questions[G.queue.pop()];
+  G.q={q:q.q,opts:shuffle(q.a.map((t,i)=>({t,ok:i===0})))};G.answered=null;if(G.view==='stock')renderStock()}
+function answer(i){if(G.answered!==null)return;G.answered=i;
+  if(G.q.opts[i].ok){G.stats.ok++;const n=upv('restock');for(const f of FOODS)if(G.lvl[f.id])G.stock[f.id]=(G.stock[f.id]||0)+n;
+    renderStock();setTimeout(()=>{if(G&&!G.over&&G.answered===i)nextQ()},800)}
+  else{G.stats.bad++;G.lockUntil=Date.now()+2500;renderStock()}}
+function renderStock(){if(!G.q)return;const q=G.q,a=G.answered,ok=a!==null&&q.opts[a].ok;
+  let h=`<div class="q">${esc(q.q)}</div><div class="ans">`+q.opts.map((o,i)=>{let cls='';if(a!==null){if(o.ok)cls='ok';else if(i===a)cls='bad'}
+    return `<button data-a="${i}" class="${cls}"${a!==null?' disabled':''}>${esc(o.t)}</button>`}).join('')+'</div>';
+  h+=`<div class="fb">${a===null?'':ok?`Správně! +${upv('restock')} ks od každého jídla`:'Špatně. Správná odpověď je zelená.'}</div>`;
+  if(a!==null&&!ok)h+=`<button id="q-next" class="pri"${Date.now()<G.lockUntil?' disabled':''}>Další otázka</button>`;
+  h+='<div class="stockrow">'+FOODS.filter(f=>G.lvl[f.id]).map(f=>`<span class="chip">${esc(f.n)} ${G.stock[f.id]||0}</span>`).join('')+'</div>';
+  $('#g-body').innerHTML=h}
+
+function renderShop(){const t=G.shopTab;let h=`<div class="tabs">${[['food','Jídlo'],['up','Vylepšení'],['ab','Schopnosti']].map(([k,n])=>`<button data-tab="${k}" aria-pressed="${k===t}">${n}</button>`).join('')}</div><div class="list">`;
+  const btn=(key,cost,label)=>`<button class="pri" data-buy="${key}"${G.cash<cost?' disabled':''}>${label||fmt(cost)}</button>`;
+  if(t==='food')h+=FOODS.map((f,i)=>{const l=G.lvl[f.id]||0;
+    if(!l){if(i&&!G.lvl[FOODS[i-1].id])return '';
+      return `<div class="item"><div class="grow"><b>${esc(f.n)}</b><div class="small mut">zamčeno · odemkne se prvním vylepšením: ${esc(FOODS[i-1].n)}</div></div></div>`}
+    if(l>=MAXLVL)return `<div class="item"><div class="grow"><b>${esc(f.n)}</b> <span class="small mut">úroveň ${l} (max)</span><div class="small mut">${fmt(price(f,l))} za kus</div></div></div>`;
+    return `<div class="item"><div class="grow"><b>${esc(f.n)}</b> <span class="small mut">úroveň ${l}</span><div class="small mut">${fmt(price(f,l))} → ${fmt(price(f,l+1))} za kus</div></div>${btn('f:'+f.id,upCost(f,l))}</div>`}).join('');
+  if(t==='up')h+=UPG.map(u=>{const l=G.up[u.id],max=l>=u.cost.length;
+    return `<div class="item"><div class="grow"><b>${u.n}</b><div class="small mut">${u.d(u.vals[l])}${max?' (max)':' → '+u.d(u.vals[l+1])}</div></div>${max?'':btn('u:'+u.id,u.cost[l])}</div>`}).join('');
+  if(t==='ab')h+=ABIL.map(a=>`<div class="item"><div class="grow"><b>${a.n}</b><div class="small mut">${a.d}</div></div>${btn('a:'+a.id,abCost(a))}</div>`).join('');
+  $('#g-body').innerHTML=h+'</div>'}
+function buy(key){const[k,id]=key.split(':');let cost;
+  if(k==='f'){const f=food(id),l=G.lvl[id]||0;if(!l||l>=MAXLVL)return;cost=upCost(f,l);if(G.cash<cost)return;G.cash-=cost;G.lvl[id]=l+1;
+    const nx=FOODS[FOODS.indexOf(f)+1];
+    if(l===1&&nx&&!G.lvl[nx.id]){G.lvl[nx.id]=1;G.stock[nx.id]=upv('restock');toast('Nové jídlo: '+nx.n)}else toast(f.n+' úroveň '+(l+1))}
+  if(k==='u'){const u=UPG.find(x=>x.id===id);cost=u.cost[G.up[id]];if(cost==null||G.cash<cost)return;G.cash-=cost;G.up[id]++}
+  if(k==='a'){const a=ABIL.find(x=>x.id===id);cost=abCost(a);if(G.cash<cost)return;G.cash-=cost;G.ab[id]=(G.ab[id]||0)+1;
+    if(id==='happy')G.happyUntil=Date.now()+30000;if(id==='freeze')G.freezeUntil=Date.now()+20000;
+    if(id==='fill')for(const f of FOODS)if(G.lvl[f.id])G.stock[f.id]=(G.stock[f.id]||0)+10;toast(a.n+' aktivováno')}
+  renderShop();renderTop()}
+
+$('#g-quit').addEventListener('click',()=>{if(!G)return;if(G.mp&&!mp.host){mpLeave();G=null;show('home');return}endGame()});
+function endGame(){if(!G||G.over)return;G.over=true;clearInterval(loop);
+  if(G.mp&&mp){mpPush(true);if(mp.host)mp.ref.update({phase:'ended'}).catch(()=>{})}
+  $('#end-cash').textContent=fmt(G.cash);const s=G.stats;
+  $('#end-stats').innerHTML=[['Správné odpovědi',s.ok],['Špatné odpovědi',s.bad],['Obsloužení zákazníci',s.served],['Odešlo naštvaných',s.left]].map(([a,b])=>`<div class="item"><span>${a}</span><b>${b}</b></div>`).join('');
+  $('#end-again').hidden=G.mp;renderEndBoard();show('end')}
+$('#end-again').addEventListener('click',()=>{if(lastCfg)startGame(lastCfg)});
+
+/* ---------- multiplayer (room + db) ---------- */
+let RM=null,DB=null,mp=null;
+(async()=>{[RM,DB]=await Promise.all([cu('room'),cu('db')]);if(!(RM&&DB))$('#mp-note').textContent='Multiplayer funguje jen při otevření na claude.ai a po přihlášení.'})();
+const mpErrText=e=>e&&e.code==='not_permitted'||e&&/permi/i.test(e.message||'')?'Nemáš oprávnění. Majitel stránky ti musí dát přístup, který povoluje interakci.':'Nepodařilo se připojit. Zkus to znovu.';
+const snapData=s=>{if(!s)return null;if(typeof s.data==='function'){if(s.exists===false)return null;return s.data()||null}if('exists' in s&&!s.exists)return null;return s.data!==undefined?s.data:s};
+async function ready(st){if(!(RM&&DB))[RM,DB]=await Promise.all([cu('room'),cu('db')]);if(!(RM&&DB)){st.textContent='Multiplayer tu teď nejde (otevři hru na claude.ai).';return false}return true}
+async function hostCreate(cfg,name){const st=$('#setup-status');if(!await ready(st))return;
+  const code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+  st.textContent='Vytvářím hru…';
+  try{await DB.doc('games/'+code).set({phase:'lobby',host:name,mode:cfg.mode,val:cfg.val,endsAt:0,set:cfg.set,t:Date.now()})}catch(e){st.textContent=mpErrText(e);return}
+  mpEnter(code,name,true,st)}
+$('#join-go').addEventListener('click',async()=>{const st=$('#join-status'),name=$('#join-name').value.trim(),code=$('#join-code').value.trim().toUpperCase();
+  if(!name||code.length!==4){st.textContent='Vyplň jméno a 4místný kód.';return}if(!await ready(st))return;store.set('cafe.name',name);st.textContent='Připojuju…';mpEnter(code,name,false,st)});
+async function mpEnter(code,name,host,st){
+  if(mp)mpLeave();
+  const m={code,name,host,peers:[],doc:null,ref:DB.doc('games/'+code),lastPush:0};
+  try{m.rm=await RM.join('cafe-'+code.toLowerCase())}catch(e){st.textContent=mpErrText(e);return}
+  mp=m;G=null;
+  m.rm.presence({n:name.slice(0,24),c:0,h:host?1:0}).catch(()=>{});
+  m.unPeers=m.rm.onPeers(ch=>{if(mp!==m)return;m.peers=ch.peers;renderLobby();renderBoard();checkGoal()},()=>{});
+  const timer=setTimeout(()=>{if(mp===m&&!m.doc)$('#lobby-status').textContent='Hru se nepodařilo načíst. Zkontroluj kód.'},10000);
+  m.unDoc=m.ref.onSnapshot(s=>{clearTimeout(timer);if(mp!==m)return;const d=snapData(s);
+    if(!d||!d.set){$('#lobby-status').textContent='Hra s tímto kódem neexistuje.';return}m.doc=d;onDoc(d)},
+    e=>{clearTimeout(timer);if(mp===m)$('#lobby-status').textContent=mpErrText(e)});
+  $('#lobby-code').textContent=code;$('#lobby-status').textContent='';st.textContent='';renderLobby();show('lobby')}
+function onDoc(d){if(d.phase==='playing'&&!G)startGame({set:d.set,mode:d.mode,val:d.val,endsAt:d.endsAt||0,mp:true});
+  else if(d.phase==='ended'&&G&&!G.over)endGame();renderLobby()}
+const players=()=>mp?mp.peers.filter(p=>p.presence&&typeof p.presence.n==='string'):[];
+function renderLobby(){if(!mp)return;const d=mp.doc;
+  $('#lobby-info').textContent=d?`${d.set.name} · ${d.mode==='time'?d.val+' min':'cíl '+fmt(d.val)} · host ${d.host}`:'Načítám…';
+  $('#lobby-list').innerHTML=players().map(p=>`<div class="item"><span>${esc(p.presence.n)}${p.sameTab?' (ty)':''}</span><span class="small mut">${p.presence.h?'host':''}</span></div>`).join('')||'<p class="mut">Zatím nikdo.</p>';
+  $('#lobby-start').hidden=!(mp.host&&d&&d.phase==='lobby')}
+$('#lobby-start').addEventListener('click',()=>{const d=mp&&mp.doc;if(!d)return;
+  mp.ref.update({phase:'playing',endsAt:d.mode==='time'?Date.now()+d.val*60000+2000:0}).catch(e=>$('#lobby-status').textContent=mpErrText(e))});
+$('#lobby-leave').addEventListener('click',()=>{mpLeave();show('home')});
+function mpPush(force){if(!mp||!G)return;const now=Date.now();if(!force&&now-mp.lastPush<1000)return;mp.lastPush=now;mp.rm.presence({c:Math.floor(G.cash)}).catch(()=>{})}
+function mpTick(){mpPush(false)}
+function checkGoal(){if(G&&!G.over&&G.mp&&G.mode==='goal'&&players().some(p=>+p.presence.c>=G.goal))endGame()}
+const ranking=()=>players().slice().sort((a,b)=>(+b.presence.c||0)-(+a.presence.c||0));
+function renderBoard(){if(!G||!G.mp)return;$('#g-board').innerHTML=ranking().slice(0,5).map((p,i)=>`<div class="item"><span>${i+1}. ${esc(p.presence.n)}${p.sameTab?' (ty)':''}</span><b>${fmt(+p.presence.c||0)}</b></div>`).join('')}
+function renderEndBoard(){if(!G||!G.mp){$('#end-board').innerHTML='';return}
+  $('#end-board').innerHTML='<h2 style="margin-top:20px">Pořadí</h2><div class="list">'+ranking().map((p,i)=>`<div class="item"><span>${i+1}. ${esc(p.presence.n)}${p.sameTab?' (ty)':''}</span><b>${fmt(p.sameTab?G.cash:+p.presence.c||0)}</b></div>`).join('')+'</div>'}
+function mpLeave(){if(!mp)return;const m=mp;mp=null;try{m.unPeers&&m.unPeers()}catch{}try{m.unDoc&&m.unDoc()}catch{}m.rm&&m.rm.leave().catch(()=>{})}
+}
+</script>
+</body>
+</html>

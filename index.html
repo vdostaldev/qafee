@@ -5,444 +5,291 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Qafee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,600;1,400&family=Grenze+Gotisch:wght@500;700&display=swap" rel="stylesheet">
+<script src="art.js"></script>
 <style>
-/* VOICE: a kid's sketchbook café, pen on paper, stop-motion
-   IDEA: every element is a scrap torn out of one kind of paper per role, laid on a desk sheet
-   PICTURE: the café scene, scribbled customers walking in behind each other
-   COLOUR and TYPE: black ink on paper tones, Patrick Hand
-   LAYOUT: phone first, one column */
-:root{color-scheme:light;--paper:#efebe2;--ink:#1b1a17;--mut:#6d675c;--W:380px}
+/* VOICE: scratchy ink on yellowed paper, a little odd, cosy until the dark creeps in
+   IDEA: a café drawn in a Don't Starve-like ink hand (see design/art/art-bible.md)
+   PICTURE: the café scene with spindly customers; the day/night clock
+   COLOUR and TYPE: parchment, sepia ink, red correction ink, mustard light; Grenze Gotisch + Alegreya
+   LAYOUT: phone first, left-aligned, bottom bar in game */
+:root{color-scheme:light;--parch:#e8ddc4;--ink:#2a2119;--dark:#1a140f;--red:#9a3b2c;--must:#b8903e;--mut:#6e6150;--W:380px}
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font:20px/1.3 "Patrick Hand",system-ui,sans-serif;overflow-x:clip;min-height:100vh}
-.grain{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
-.app{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:14px 12px 60px}
-svg.d{overflow:visible;display:block}
-.v{display:none}
-body[data-f="0"] .v0,body[data-f="1"] .v1,body[data-f="2"] .v2{display:inline}
-h2{font-size:34px;font-weight:400;margin:6px 4px 14px;line-height:1.05}
-p{margin:0 0 10px}
-.mut{color:var(--mut)}.small{font-size:17px}
+body{background:var(--parch);color:var(--ink);font:19px/1.4 Alegreya,Georgia,serif;overflow-x:clip;min-height:100vh}
+.tex{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;mix-blend-mode:multiply}
+.vig{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at 50% 42%,transparent 58%,rgba(26,20,15,.38) 100%)}
+.app{position:relative;z-index:1;max-width:600px;margin:0 auto;padding:16px 16px 40px}
 [hidden]{display:none!important}
-/* scraps */
-.scrap{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;min-height:46px;font:inherit;color:var(--ink);background:none;border:0;cursor:pointer;isolation:isolate;transform:rotate(var(--r,0deg));text-align:center;touch-action:manipulation}
-button.scrap:active{transform:rotate(var(--r,0deg)) translateY(2px)}
-button.scrap:disabled{opacity:.42;cursor:not-allowed}
-.bgp{position:absolute;left:0;top:0;z-index:-1;overflow:visible;pointer-events:none}
-.scrap:focus-visible,.plain:focus-visible{outline:2px dashed var(--ink);outline-offset:4px}
-.sel{text-decoration:underline wavy 1.5px;text-underline-offset:5px}
-.btn.big{font-size:30px;padding:14px 40px}
-.back{font:inherit;font-size:18px;background:none;border:0;color:var(--mut);padding:8px 4px;cursor:pointer}
-.stack{display:flex;flex-direction:column;gap:14px;align-items:center;margin-top:10px}
-.stack .scrap{min-width:230px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.status{min-height:26px;margin:10px 4px;font-size:18px}
-/* home */
-.title{font-size:clamp(84px,26vw,132px);line-height:.9;text-align:center;margin:18px 0 0;font-weight:400;letter-spacing:-.02em}
-.uline{width:62%;margin:0 auto}
-.hero{width:52%;max-width:240px;margin:14px auto 18px}
-/* fields + chips */
-.field{display:block;width:100%;padding:6px 10px}
-.field input,.field textarea{font:inherit;font-size:20px;width:100%;background:transparent;border:0;color:var(--ink);padding:6px 4px;outline:none}
-.field textarea{min-height:200px;resize:vertical;line-height:22px;padding-top:2px}
-label.lbl{display:block;margin:16px 4px 6px;font-size:19px;color:var(--mut)}
-.chips{display:flex;gap:10px;flex-wrap:wrap}
-.chip{min-width:64px}
-.rowi{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;margin-bottom:12px;justify-content:flex-start;cursor:default}
-.rowi .grow{flex:1;text-align:left;line-height:1.15}.rowi small{display:block;color:var(--mut);font-size:16px}
-.rowi svg.d{width:52px;height:52px;flex:none}
-.plain{font:inherit;background:none;border:0;color:inherit;text-align:left;padding:0;cursor:pointer;flex:1}
-.btn.sm{font-size:17px;min-height:40px;padding:6px 12px}
-.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.thumbs img{width:64px;height:64px;object-fit:cover;transform:rotate(-2deg);box-shadow:1px 2px 3px rgba(0,0,0,.2)}
-/* game hud */
-.hud{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.cash{font-size:32px;padding:4px 20px}
-.pbar{height:12px;border:2px solid var(--ink);border-radius:6px 3px 7px 4px;margin:10px 4px 0;overflow:hidden}
-.pbar i{display:block;height:100%;background:repeating-linear-gradient(-55deg,var(--ink) 0 2px,transparent 2px 6px)}
-.tabs{display:flex;gap:10px;margin:12px 0 4px;justify-content:center}
-.badge{font-size:16px;border:1.5px solid var(--ink);border-radius:50% 45% 55% 50%;min-width:24px;padding:0 5px;line-height:20px}
-.board{display:block;margin-top:10px;padding:8px 14px;font-size:17px;text-align:left}
-/* scene */
-.scene{position:relative;margin-top:14px;overflow-x:clip;height:calc(var(--W)*.48 + 30px)}
-.scene.two{height:calc(var(--W)*.9 + 26px)}
-.tbl,.who,.ticket{position:absolute;transform:translateX(-50%)}
-.tbl.r0{bottom:0;width:31%;z-index:6}.tbl.r1{bottom:calc(var(--W)*.5);width:25%;z-index:3}
-.who.r0{bottom:calc(var(--W)*.072);width:27%}.who.r1{bottom:calc(var(--W)*.56);width:22%}
-.ticket{z-index:8;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 6px;padding:6px 10px 10px;max-width:34%;font-size:16px;cursor:default;transform:translateX(-50%) rotate(var(--r,0deg))}
-.ticket.r0{bottom:2px}.ticket.r1{bottom:calc(var(--W)*.5 + 2px)}
+svg.d{overflow:visible;display:block}
+.v{display:none}body[data-f="0"] .v0,body[data-f="1"] .v1{display:inline}
+.la,.lb{display:none}.step-a .ls,.step-b .ls{display:none}.step-a .la,.step-b .lb{display:inline}
+h1,h2,h3{font-family:"Grenze Gotisch",serif;font-weight:700;margin:0;line-height:.95;color:var(--ink)}
+h2{font-size:44px;margin:10px 0 18px}
+h3{font-size:28px;margin:22px 0 8px}
+p{margin:0 0 10px}.mut{color:var(--mut)}.it{font-style:italic}.small{font-size:16px}
+.ib,.note,.under,.counter{position:relative;isolation:isolate}
+.ifr{position:absolute;left:0;top:0;z-index:-1;overflow:visible;pointer-events:none}
+.ib{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 22px;font:600 20px/1.1 Alegreya,serif;color:var(--ink);background:none;border:0;cursor:pointer;touch-action:manipulation}
+.ib.big{font:700 30px/1 "Grenze Gotisch",serif;padding:14px 30px;min-height:62px}
+.ib.dark{color:#f3ead5}
+.ib.sm{font-size:17px;min-height:42px;padding:6px 14px}
+.ib:active{transform:translate(1px,2px)}
+.ib:disabled{opacity:.38;cursor:not-allowed}
+.ib:focus-visible,.opt:focus-visible,.row:focus-visible,.link:focus-visible{outline:2px dashed var(--red);outline-offset:4px}
+.back,.link{font:italic 18px Alegreya,serif;background:none;border:0;color:var(--mut);padding:8px 0;cursor:pointer}
+.link{color:var(--ink);text-decoration:underline;text-decoration-style:wavy;text-underline-offset:4px;padding:4px 2px}
+.mk{position:absolute;inset:-6px -10px;width:calc(100% + 20px);height:calc(100% + 12px);pointer-events:none;overflow:visible}
+.opts{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:center;margin:4px 0}
+.opt{position:relative;font:600 21px Alegreya,serif;background:none;border:0;color:var(--ink);padding:8px 8px;min-height:44px;cursor:pointer}
+.under{display:block;width:100%;padding:2px 2px 8px}
+.under input,.under textarea{font:inherit;font-size:20px;width:100%;background:transparent;border:0;color:var(--ink);padding:4px 2px;outline:none}
+.under textarea{min-height:190px;resize:vertical;line-height:28px;background:repeating-linear-gradient(transparent 0 27px,rgba(42,33,25,.16) 27px 28px)}
+label.lbl{display:block;margin:18px 0 2px;font:italic 18px Alegreya,serif;color:var(--mut)}
+.status{min-height:26px;margin:12px 0;font-style:italic;color:var(--red)}
+.title{font-size:clamp(96px,30vw,150px);margin:8px 0 0 -4px;letter-spacing:-.01em}
+.homerow{position:relative;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);align-items:end;margin-top:6px;min-height:400px}
+.homebtns{display:flex;flex-direction:column;align-items:flex-start;gap:16px;align-self:start;padding-top:40px;position:relative;z-index:4}
+.hero{position:relative;width:100%;max-width:300px;justify-self:end;margin-right:-10px}.hero .htbl{position:absolute;left:-34%;bottom:-3%;width:74%;z-index:2}.hero .hcup{position:absolute;left:-10%;bottom:19%;width:20%;z-index:3}
+.hero svg.d{width:100%;height:auto}
+.stack{display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 2px 14px;width:100%;background:none;border:0;font:inherit;color:inherit;text-align:left}
+.row .grow{flex:1;line-height:1.15}.row small{display:block;font-style:italic;color:var(--mut);font-size:16px}
+.row svg.d{width:46px;height:46px;flex:none}
+.rname{font:700 24px "Grenze Gotisch",serif}
+.lead{flex:1;align-self:flex-end;margin:0 4px 9px;border-bottom:2px dotted rgba(42,33,25,.55);min-width:12px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.thumbs img{width:64px;height:64px;object-fit:cover;transform:rotate(-2deg);box-shadow:1px 2px 3px rgba(0,0,0,.25)}
+#s-game{padding-bottom:96px}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cash{display:flex;align-items:center;gap:6px;font:700 40px/1 "Grenze Gotisch",serif}
+.cash svg.d{width:38px;height:38px}
+.clock{display:flex;flex-direction:column;align-items:center;font:600 15px Alegreya,serif;color:var(--mut)}
+.clock svg{width:58px;height:58px;overflow:visible}
+.rule{display:block;width:100%;height:8px;margin:6px 0 2px}
+.fx{min-height:22px;font-style:italic;color:var(--red);font-size:16px}
+.board{font-size:16px;font-style:italic;color:var(--mut);margin:2px 0 4px}
+.scene{position:relative;margin:4px -16px 0;overflow:hidden;height:calc(var(--W)*.6 + 40px)}
+.scene.two{height:calc(var(--W)*1.0 + 30px)}
+.scene .bg{position:absolute;left:0;top:0;z-index:0}
+.night{position:absolute;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse closest-side at 50% 48%,rgba(26,20,15,.2),rgba(26,20,15,.97));opacity:0}
+.tbl,.who,.ticket,.pop{position:absolute;transform:translateX(-50%)}
+.tbl svg.d,.who svg.d{width:100%;height:auto}
+.tbl.r0{bottom:4px;width:30%;z-index:6}.tbl.r1{bottom:calc(var(--W)*.42);width:24%;z-index:3}
+.who.r0{bottom:calc(var(--W)*.12);width:24%}.who.r1{bottom:calc(var(--W)*.5);width:19%}
+.ticket{z-index:8;display:flex;flex-wrap:wrap;justify-content:center;gap:0 6px;padding:5px 10px 10px;max-width:33%;font:600 16px Alegreya,serif}
+.ticket.r0{bottom:8px}.ticket.r1{bottom:calc(var(--W)*.42 + 8px)}
 .tki{display:inline-flex;align-items:center;gap:1px;font:inherit;background:none;border:0;padding:2px;cursor:pointer;color:inherit;position:relative}
 .tki svg.d{width:28px;height:28px}
-.tki.short{color:#9a2b1e}
-.tki.done{opacity:.35}.tki.done::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;border-top:2px solid var(--ink);transform:rotate(-14deg)}
-.pat{position:absolute;left:12%;right:12%;bottom:4px;height:3px}
-.pat i{display:block;height:100%;background:var(--ink);border-radius:2px}
-.pat.low i{background:#9a2b1e}
-.plates{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
-.plate{flex-direction:column;padding:10px 4px 8px;gap:0;font-size:16px;line-height:1.1}
-.plate svg.d{width:52px;height:52px}
-.plate.low b{color:#9a2b1e}
-.hint{font-size:16px;color:var(--mut);margin:12px 4px 0}
-/* stock */
-.q{font-size:28px;margin:16px 4px 16px;line-height:1.15}
-.ans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.ans .scrap{min-height:76px;font-size:22px;line-height:1.1}
-.mark{position:absolute;inset:-8px -6px;width:calc(100% + 12px);height:calc(100% + 16px);pointer-events:none;overflow:visible}
-.fb{min-height:30px;margin:14px 4px 6px;font-size:22px}
-.minis{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:17px;color:var(--mut)}
-.minis span{display:inline-flex;align-items:center;gap:2px}.minis svg.d{width:26px;height:26px}
-/* shop */
-.subtabs{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
-/* end + lobby */
-.bigcash{font-size:56px;padding:6px 30px}
-.code{font-size:60px;letter-spacing:.08em;padding:4px 28px}
-/* wipe + toast */
-#wipe{position:fixed;inset:0;z-index:40;pointer-events:none;display:none;overflow:hidden}
-#wipe svg{position:absolute;top:0;left:0;overflow:visible;will-change:transform}
-#toast{position:fixed;left:50%;bottom:22px;z-index:30;transform:translateX(-50%) rotate(-1.5deg);opacity:0;transition:opacity .15s;pointer-events:none;max-width:88vw}
+.tki.short{color:var(--red)}.tki.short::before{content:"!";font-weight:700;margin-right:1px}
+.tki.done{opacity:.3}
+.pat{position:absolute;left:14%;right:14%;bottom:4px;height:3px;border-radius:2px;background:rgba(42,33,25,.15)}
+.pat i{display:block;height:100%;background:var(--ink);border-radius:2px}.pat.low i{background:var(--red)}
+.pop{z-index:10;font:700 26px "Grenze Gotisch",serif;color:var(--must);text-shadow:0 1px 0 #1a140f,1px 0 0 #1a140f,-1px 0 0 #1a140f,0 -1px 0 #1a140f;pointer-events:none}
+.counter{margin:0 -6px;padding:10px 6px 12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
+.plate{display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:2px 0;font:700 19px "Grenze Gotisch",serif;color:#f3ead5;cursor:pointer;min-height:44px}
+.plate svg.d{width:50px;height:50px}
+.plate.low b{color:#f0a089}
+.hint{font-size:16px;font-style:italic;color:var(--mut);margin:10px 0 0}
+.q{font:600 27px/1.2 Alegreya,serif;margin:16px 0 14px}
+.qlab{font:700 20px "Grenze Gotisch",serif;color:var(--mut)}
+.ans{display:flex;flex-direction:column;gap:2px}
+.arow{position:relative;display:flex;align-items:baseline;gap:12px;padding:12px 4px 14px;background:none;border:0;font:inherit;font-size:21px;color:var(--ink);text-align:left;cursor:pointer;min-height:52px;width:100%}
+.arow .lt{font:700 24px "Grenze Gotisch",serif;position:relative;width:26px;flex:none;text-align:center}
+.arow .lt .mk{inset:-8px -10px}
+.arow .tx{position:relative}.arow .tx .mk{inset:-4px -6px}
+.ck{position:absolute;right:4px;top:6px;width:34px;height:34px;overflow:visible}
+.fb{min-height:30px;margin:14px 0 8px;font-style:italic;font-size:20px;color:var(--red)}
+.minis{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:16px;font:700 18px "Grenze Gotisch",serif;color:var(--mut)}
+.minis span{display:inline-flex;align-items:center;gap:2px}.minis svg.d{width:28px;height:28px}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#1f1812;display:flex;justify-content:center}
+.bnav .in{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;max-width:600px}
+.bnav button{position:relative;display:flex;flex-direction:column;align-items:center;gap:0;padding:8px 4px 12px;background:none;border:0;color:#cdbf9f;font:600 15px Alegreya,serif;cursor:pointer}
+.bnav button svg.d{width:38px;height:38px}
+.bnav button.sel{color:#f3ead5}
+.bnav .ul{position:absolute;left:28%;right:28%;bottom:4px;height:8px;width:44%}
+.bnav .bdg{position:absolute;top:4px;left:calc(50% + 14px);font:700 18px "Grenze Gotisch",serif;color:#f0a089}
+.bigcash{display:flex;align-items:center;gap:8px;font:700 64px/1 "Grenze Gotisch",serif;margin:6px 0 10px}.bigcash svg.d{width:56px;height:56px}
+.code{font:700 72px/1 "Grenze Gotisch",serif;letter-spacing:.06em;margin:4px 0 12px}
+#iris{position:fixed;inset:0;z-index:50;pointer-events:none;display:none;background:radial-gradient(circle at 50% 45%,transparent var(--ir),#1a140f calc(var(--ir) + 1px))}
+#toast{position:fixed;left:50%;bottom:100px;z-index:40;transform:translateX(-50%) rotate(-1deg);background:#1f1812;color:#f3ead5;padding:8px 16px;font:italic 18px Alegreya,serif;opacity:0;transition:opacity .15s;pointer-events:none;max-width:88vw}
 #toast.on{opacity:1}
-@media(max-width:420px){.ans{grid-template-columns:1fr}.ans .scrap{min-height:56px}.plate{font-size:14px}.plate svg.d{width:44px;height:44px}.q{font-size:25px}.tki svg.d{width:24px;height:24px}.ticket{font-size:14px;padding:5px 6px 9px}}
+@media(max-width:420px){.title{font-size:27vw}.q{font-size:24px}.plate svg.d{width:42px;height:42px}.tki svg.d{width:24px;height:24px}.ticket{font-size:14px;padding:4px 6px 9px}}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}}
 </style>
 </head>
 <body data-f="0">
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-  <filter id="torn" x="-15%" y="-15%" width="130%" height="130%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.11" numOctaves="2" seed="4" result="n"/>
-    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="d"/>
-    <feDropShadow dx="1" dy="2" stdDeviation="1.2" flood-color="#000" flood-opacity=".22"/>
-  </filter>
-  <pattern id="p-noise" patternUnits="userSpaceOnUse" width="180" height="180"><image id="noise-img" width="180" height="180"/></pattern>
-  <pattern id="p-lines" patternUnits="userSpaceOnUse" width="10" height="22"><line x1="0" x2="10" y1="21.5" y2="21.5" stroke="#8eaacd" stroke-width="1" opacity=".55"/></pattern>
-  <pattern id="p-grid" patternUnits="userSpaceOnUse" width="14" height="14"><path d="M14 .5H.5V14" fill="none" stroke="#9db3cb" stroke-width=".7" opacity=".6"/></pattern>
-</defs></svg>
-<svg class="grain" aria-hidden="true"><rect width="100%" height="100%" fill="url(#p-noise)" opacity=".7"/></svg>
-
+<canvas class="tex" id="tex"></canvas>
+<div class="vig"></div>
 <main class="app">
+
 <section class="scr" id="s-home">
   <h1 class="title">Qafee</h1>
-  <div class="uline" data-dz="deco:uline"></div>
-  <div class="hero" id="hero"></div>
-  <div class="stack"><button class="scrap btn big" data-go="mode">Hrát</button></div>
-  <p class="small mut" id="mp-note" style="text-align:center;margin-top:16px"></p>
+  <div class="homerow">
+    <div class="homebtns">
+      <button class="ib dark big" data-go="mode">Hrát</button>
+    </div>
+    <div class="hero" id="hero"></div>
+  </div>
+  <p class="it mut small" id="mp-note" style="margin-top:22px;max-width:22em"></p>
 </section>
 
 <section class="scr" id="s-mode" hidden>
   <button class="back" data-go="home">← zpět</button>
   <h2>Jak chceš hrát?</h2>
   <div class="stack">
-    <button class="scrap btn big" data-go="single">Sám</button>
-    <button class="scrap btn big" data-go="mp">S kamarády</button>
+    <button class="ib big" data-go="single">Sám</button>
+    <button class="ib big" data-go="mp">S kamarády</button>
   </div>
 </section>
 
 <section class="scr" id="s-mp" hidden>
   <button class="back" data-go="mode">← zpět</button>
-  <h2>Multiplayer</h2>
+  <h2>S kamarády</h2>
   <div class="stack">
-    <button class="scrap btn big" data-go="host">Založit hru</button>
-    <button class="scrap btn big" data-go="join">Připojit se</button>
+    <button class="ib big" data-go="host">Založit hru</button>
+    <button class="ib big" data-go="join">Připojit se</button>
   </div>
-  <p class="small mut" style="margin-top:20px">Spoluhráči musí mít tuhle stránku nasdílenou na claude.ai s přístupem, který dovoluje interakci.</p>
+  <p class="it mut small" style="margin-top:22px;max-width:24em">Spoluhráči musí mít tuhle stránku nasdílenou na claude.ai s přístupem, který dovoluje interakci.</p>
 </section>
 
 <section class="scr" id="s-sets" hidden>
   <button class="back" id="sets-back">← zpět</button>
-  <h2>Vyber otázky</h2>
+  <h2>Z čeho se budeš ptát?</h2>
   <div id="sets-list"></div>
-  <div class="row" style="margin-top:6px"><button class="scrap btn" data-go="gen">+ Nová sada z poznámek</button></div>
-  <details style="margin-top:18px"><summary class="mut">Import sady (JSON)</summary>
-    <div class="scrap field" style="margin-top:10px"><textarea id="imp-text" style="min-height:120px" aria-label="JSON sady"></textarea></div>
-    <div class="row" style="margin-top:10px"><button class="scrap btn" id="imp-btn">Importovat</button></div>
+  <div style="margin-top:16px"><button class="ib" data-go="gen">Nová sada z poznámek</button></div>
+  <details style="margin-top:20px"><summary class="it mut">Import sady (JSON)</summary>
+    <div class="under" style="margin-top:8px"><textarea id="imp-text" style="min-height:120px" aria-label="JSON sady"></textarea></div>
+    <div style="margin-top:10px"><button class="ib sm" id="imp-btn">Importovat</button></div>
   </details>
 </section>
 
 <section class="scr" id="s-gen" hidden>
   <button class="back" data-go="sets">← zpět</button>
-  <h2>Nová sada z poznámek</h2>
-  <div class="chips" id="gen-src"><button class="scrap chip sel" data-src="text">Vložit text</button><button class="scrap chip" data-src="img">Fotky poznámek</button></div>
-  <div id="src-text-box" style="margin-top:14px"><div class="scrap field lined"><textarea id="src-text" placeholder="Sem vlož poznámky…" aria-label="Poznámky"></textarea></div></div>
-  <div id="src-img-box" hidden style="margin-top:14px">
-    <label class="scrap btn" for="src-img">Vybrat fotky</label>
+  <h2>Sada z poznámek</h2>
+  <div class="opts" id="gen-src"><button class="opt sel" data-src="text">vložit text</button><button class="opt" data-src="img">fotky poznámek</button></div>
+  <div id="src-text-box" style="margin-top:8px"><div class="under"><textarea id="src-text" placeholder="Sem vlož poznámky…" aria-label="Poznámky"></textarea></div></div>
+  <div id="src-img-box" hidden style="margin-top:12px">
+    <label class="ib" for="src-img">Vybrat fotky</label>
     <input type="file" id="src-img" accept="image/*" multiple hidden>
     <div class="thumbs" id="thumbs"></div>
   </div>
   <label class="lbl">Počet otázek</label>
-  <div class="chips" id="q-count"><button class="scrap chip" data-n="10">10</button><button class="scrap chip sel" data-n="15">15</button><button class="scrap chip" data-n="20">20</button><button class="scrap chip" data-n="30">30</button></div>
-  <div class="row" style="margin-top:18px"><button class="scrap btn" id="gen-btn">Vygenerovat otázky</button></div>
+  <div class="opts" id="q-count"><button class="opt" data-n="10">10</button><button class="opt sel" data-n="15">15</button><button class="opt" data-n="20">20</button><button class="opt" data-n="30">30</button></div>
+  <div style="margin-top:18px"><button class="ib dark" id="gen-btn">Vygenerovat otázky</button></div>
   <div class="status" id="gen-status" role="status"></div>
   <div id="draft" hidden>
     <label class="lbl" for="draft-name">Název sady</label>
-    <div class="scrap field"><input id="draft-name"></div>
-    <div id="draft-list" style="margin-top:14px"></div>
-    <div class="row"><button class="scrap btn" id="draft-save">Uložit</button><button class="scrap btn" id="draft-play">Uložit a hrát</button></div>
+    <div class="under"><input id="draft-name"></div>
+    <div id="draft-list" style="margin-top:10px"></div>
+    <div class="stack" style="flex-direction:row;flex-wrap:wrap;margin-top:8px"><button class="ib" id="draft-save">Uložit</button><button class="ib dark" id="draft-play">Uložit a hrát</button></div>
   </div>
 </section>
 
 <section class="scr" id="s-setup" hidden>
   <button class="back" data-go="sets">← zpět</button>
   <h2 id="setup-title">Nastavení</h2>
-  <p class="mut" id="setup-set"></p>
-  <div id="name-box" hidden><label class="lbl" for="host-name">Tvoje jméno</label><div class="scrap field"><input id="host-name" maxlength="24"></div></div>
+  <p class="it" id="setup-set"></p>
+  <div id="name-box" hidden><label class="lbl" for="host-name">Tvoje jméno</label><div class="under"><input id="host-name" maxlength="24"></div></div>
   <label class="lbl">Konec hry</label>
-  <div class="chips" id="mode-chips"><button class="scrap chip sel" data-mode="time">Na čas</button><button class="scrap chip" data-mode="goal">Na peníze</button></div>
-  <div class="chips" id="val-chips" style="margin-top:12px"></div>
-  <div class="row" style="margin-top:22px"><button class="scrap btn big" id="setup-go"><span id="setup-go-t">Začít</span></button></div>
+  <div class="opts" id="mode-opts"><button class="opt sel" data-mode="time">na čas</button><button class="opt" data-mode="goal">na peníze</button></div>
+  <div class="opts" id="val-opts"></div>
+  <div style="margin-top:24px"><button class="ib dark big" id="setup-go"><span id="setup-go-t">Otevřít kavárnu</span></button></div>
   <div class="status" id="setup-status" role="status"></div>
 </section>
 
 <section class="scr" id="s-join" hidden>
   <button class="back" data-go="mp">← zpět</button>
   <h2>Připojit se</h2>
-  <label class="lbl" for="join-name">Tvoje jméno</label><div class="scrap field"><input id="join-name" maxlength="24"></div>
-  <label class="lbl" for="join-code">Kód hry</label><div class="scrap field"><input id="join-code" maxlength="4" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:.1em"></div>
-  <div class="row" style="margin-top:20px"><button class="scrap btn big" id="join-go">Připojit</button></div>
+  <label class="lbl" for="join-name">Tvoje jméno</label><div class="under"><input id="join-name" maxlength="24"></div>
+  <label class="lbl" for="join-code">Kód hry</label><div class="under"><input id="join-code" maxlength="4" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:.12em;font-size:28px"></div>
+  <div style="margin-top:22px"><button class="ib dark big" id="join-go">Připojit</button></div>
   <div class="status" id="join-status" role="status"></div>
 </section>
 
 <section class="scr" id="s-lobby" hidden>
-  <p class="mut">Kód hry</p>
-  <span class="scrap code hudp"><b id="lobby-code"></b></span>
-  <p id="lobby-info" style="margin-top:14px"></p>
-  <h2 style="font-size:28px;margin-top:18px">Hráči</h2>
+  <p class="it mut">Kód hry</p>
+  <div class="code" id="lobby-code"></div>
+  <p class="it" id="lobby-info"></p>
+  <h3>Hosté</h3>
   <div id="lobby-list"></div>
-  <div class="row" style="margin-top:10px"><button class="scrap btn big" id="lobby-start" hidden>Spustit hru</button><button class="scrap btn" id="lobby-leave">Odejít</button></div>
+  <div class="stack" style="flex-direction:row;flex-wrap:wrap;margin-top:14px"><button class="ib dark big" id="lobby-start" hidden>Otevřít</button><button class="ib" id="lobby-leave">Odejít</button></div>
   <div class="status" id="lobby-status" role="status"></div>
 </section>
 
 <section class="scr" id="s-game" hidden>
   <div class="hud">
-    <span class="scrap hudp cash"><b id="g-cash">$0</b></span>
-    <span class="scrap hudp"><b id="g-meta"></b></span>
-    <button class="scrap btn sm" id="g-quit">Konec</button>
+    <div class="cash"><span id="coin"></span><span id="g-cash">$0</span></div>
+    <div class="clock"><svg id="g-clock" viewBox="-32 -32 64 64"></svg><span id="g-meta"></span></div>
   </div>
-  <div class="pbar"><i id="g-bar" style="width:0"></i></div>
-  <div class="small mut" id="g-fx" style="margin:6px 4px 0;min-height:20px"></div>
-  <nav class="tabs" id="g-tabs">
-    <button class="scrap" data-view="cafe">Kavárna <b class="badge" id="b-cafe" hidden></b></button>
-    <button class="scrap" data-view="stock">Zásoby</button>
-    <button class="scrap" data-view="shop">Obchod</button>
-  </nav>
-  <div class="scrap board" id="g-board" hidden><div id="g-board-in"></div></div>
+  <div class="under rule" id="g-rule"></div>
+  <div class="fx" id="g-fx"></div>
+  <div class="board" id="g-board" hidden></div>
   <div id="v-cafe" hidden>
     <div class="scene" id="scene"></div>
-    <div class="plates" id="plates"></div>
-    <p class="hint">Ťukni na talíř a jídlo dostane ten, kdo čeká nejdýl. Nebo ťukni na jídlo v objednávce.</p>
+    <div class="counter" id="plates"></div>
+    <p class="hint">Ťukni na jídlo na pultu a dostane ho ten, kdo čeká nejdýl. Nebo ťukni přímo na jídlo na lístku.</p>
   </div>
   <div id="v-stock" hidden></div>
   <div id="v-shop" hidden></div>
+  <div style="margin-top:26px"><button class="link" id="g-quit">zavřít kavárnu</button></div>
 </section>
 
 <section class="scr" id="s-end" hidden>
-  <h2>Konec hry</h2>
-  <span class="scrap hudp bigcash"><b id="end-cash"></b></span>
-  <div id="end-stats" style="margin-top:18px"></div>
+  <h2>Zavíráme</h2>
+  <div class="bigcash"><span id="end-coin"></span><span id="end-cash"></span></div>
+  <div id="end-stats"></div>
   <div id="end-board"></div>
-  <div class="row" style="margin-top:16px"><button class="scrap btn big" id="end-again">Hrát znovu</button><button class="scrap btn" data-go="home">Menu</button></div>
+  <div class="stack" style="flex-direction:row;flex-wrap:wrap;margin-top:20px"><button class="ib dark big" id="end-again">Znovu</button><button class="ib" data-go="home">Menu</button></div>
 </section>
 </main>
-<div id="toast" class="scrap hudp"><span id="toast-t"></span></div>
-<div id="wipe"><svg id="wipe-svg"></svg></div>
+
+<nav class="bnav" id="bnav" hidden><div class="in">
+  <button data-view="cafe"><span data-ic="cafe"></span>Kavárna<span class="bdg" id="b-cafe"></span></button>
+  <button data-view="stock"><span data-ic="stock"></span>Zásoby</button>
+  <button data-view="shop"><span data-ic="shop"></span>Obchod</button>
+</div></nav>
+<div id="toast" role="status"></div>
+<div id="iris"></div>
 
 <script>
 {
-/* ================= helpers ================= */
 const $=s=>document.querySelector(s);
-const NS='http://www.w3.org/2000/svg';
-const mk=(t,a={})=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+const {C,mk,rng}=QA;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>'$'+Math.floor(n).toLocaleString('cs-CZ');
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 const cu=n=>{try{return window.claude&&window.claude.use?window.claude.use(n).then(x=>x,()=>null):Promise.resolve(null)}catch{return Promise.resolve(null)}};
-const rng=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const INK='#1b1a17',PAPER='#fbfaf6';
 
-/* ================= paper ================= */
-{const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d'),im=x.createImageData(180,180),R=rng(7);
- for(let i=0;i<im.data.length;i+=4){const v=R();im.data[i]=im.data[i+1]=im.data[i+2]=v<.5?60:255;im.data[i+3]=Math.abs(v-.5)*26}
- x.putImageData(im,0,0);x.strokeStyle='rgba(90,80,60,.10)';x.lineWidth=.6;
- for(let i=0;i<40;i++){const a=R()*180,b=R()*180,l=4+R()*10,t=R()*6.28;x.beginPath();x.moveTo(a,b);x.quadraticCurveTo(a+l/2,b+(R()-.5)*4,a+Math.cos(t)*l,b+Math.sin(t)*l);x.stroke()}
- document.getElementById('noise-img').setAttribute('href',c.toDataURL())}
-const PAPERS={white:{c:'#fdfcf8'},note:{c:'#fbfaf4',pat:'p-lines'},grid:{c:'#fafaf6',pat:'p-grid'},old:{c:'#f1e8d2'},kraft:{c:'#d8c3a0'},sticky:{c:'#f5e99a'}};
-const KIND=[['.hudp','sticky'],['.btn','kraft'],['.plate','old'],['.ans .scrap','note'],['.ticket','note'],['.rowi','grid'],['.lined,.board','note']];
-const kindOf=el=>{for(const [s,t] of KIND)if(el.matches(s))return t;return 'white'};
-function tornPts(w,h,R,m=3){const pts=[],cut=[0,1,2,3].map(()=>R()<.5?4+R()*Math.min(w,h)*.2:0),ph=[R()*6.3,R()*6.3,R()*6.3,R()*6.3],big=R()*4|0;
-  const C=[[m,m],[w-m,m],[w-m,h-m],[m,h-m]];
-  for(let s=0;s<4;s++){const a=C[s],b=C[(s+1)%4],len=Math.hypot(b[0]-a[0],b[1]-a[1]),dx=(b[0]-a[0])/len,dy=(b[1]-a[1])/len,nx=dy,ny=-dx;
-    const c0=cut[s],c1=cut[(s+1)%4],n=Math.max(2,Math.ceil((len-c0-c1)/5));
-    for(let i=0;i<=n;i++){const d=c0+(len-c0-c1)*i/n,off=1.6*Math.sin(d/31+ph[s])+.9*Math.sin(d/11+ph[(s+1)%4])+(R()*2-1)*(s===big?2.4:.9)-1.2;
-      pts.push([a[0]+dx*d+nx*off,a[1]+dy*d+ny*off])}}
-  return pts}
-const toD=p=>'M'+p.map(q=>q[0].toFixed(1)+' '+q[1].toFixed(1)).join('L')+'Z';
+{const c=$('#tex');const draw=()=>{c.width=innerWidth;c.height=innerHeight;const x=c.getContext('2d'),R=rng(3);x.clearRect(0,0,c.width,c.height);
+  for(let i=0;i<c.width*c.height/90;i++){x.fillStyle=R()<.5?'rgba(80,60,30,.10)':'rgba(255,250,235,.18)';x.fillRect(R()*c.width,R()*c.height,1.2,1.2)}
+  x.strokeStyle='rgba(90,70,40,.10)';x.lineWidth=.7;for(let i=0;i<c.width*c.height/5000;i++){const a=R()*c.width,b=R()*c.height,l=4+R()*12,t=R()*6.28;x.beginPath();x.moveTo(a,b);x.lineTo(a+Math.cos(t)*l,b+Math.sin(t)*l);x.stroke()}};
+  draw();addEventListener('resize',draw)}
+
 const DRAW=new WeakMap(),RO=new ResizeObserver(es=>{for(const e of es){const f=DRAW.get(e.target);f&&f()}});
-function paperize(el){if(DRAW.has(el))return;const type=kindOf(el),P=PAPERS[type],seed=Math.random()*1e9|0;
-  if(!el.style.getPropertyValue('--r'))el.style.setProperty('--r',(rng(seed)()*3.2-1.6).toFixed(1)+'deg');
-  const svg=mk('svg',{class:'bgp','aria-hidden':'true'});el.prepend(svg);
-  const draw=()=>{const w=el.offsetWidth,h=el.offsetHeight;if(!w)return;const R=rng(seed),pts=tornPts(w,h,R),d=toD(pts),fib=toD(pts.map(q=>[q[0]+(R()*2-1)*1.3,q[1]+(R()*2-1)*1.3]));
-    svg.setAttribute('width',w);svg.setAttribute('height',h);svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML='';
-    svg.append(mk('path',{d,fill:'rgba(0,0,0,.07)',transform:'translate(2.5 3.5)'}),mk('path',{d,fill:'rgba(0,0,0,.09)',transform:'translate(.8 1.4)'}),mk('path',{d:fib,fill:'#fff'}),mk('path',{d,fill:P.c}));
-    if(P.pat)svg.append(mk('path',{d,fill:`url(#${P.pat})`}));
-    svg.append(mk('path',{d,fill:'url(#p-noise)',opacity:type==='kraft'?'1':'.8'}))};
+function frame(el){if(DRAW.has(el))return;const seed=Math.random()*1e9|0;
+  const o=el.classList.contains('under')?{under:true,w:2.2}:el.classList.contains('dark')?{fill:'#2f251c',ink:C.DARK,w:2.6}:el.classList.contains('note')?{fill:C.CREAM,w:2}:el.classList.contains('counter')?{fill:C.WOOD,ink:C.DARK,w:3}:{fill:'rgba(243,234,213,.55)',w:2.4};
+  const draw=()=>{const w=el.offsetWidth,h=el.offsetHeight;if(!w)return;const old=el.querySelector(':scope>.ifr');const s=QA.frameSvg(w,h,seed,o);old?old.replaceWith(s):el.prepend(s)};
   DRAW.set(el,draw);draw();RO.observe(el)}
-function hydrate(root){root.querySelectorAll('[data-dz]').forEach(n=>{const s=dz(n.dataset.dz);if(n.className)s.classList.add(...n.className.split(' '));n.replaceWith(s)});root.querySelectorAll('.scrap').forEach(paperize)}
-function setHTML(el,html){el.querySelectorAll('.scrap').forEach(s=>RO.unobserve(s));el.innerHTML=html;hydrate(el)}
+const FOODC={};const foodArt=id=>{if(!FOODC[id])FOODC[id]=QA.food(id);return FOODC[id].cloneNode(true)};
+const ICC={};const iconArt=id=>{if(!ICC[id])ICC[id]=QA.icon(id);return ICC[id].cloneNode(true)};
+function inkify(root){root.querySelectorAll('[data-ic]').forEach(n=>n.replaceWith(iconArt(n.dataset.ic)));root.querySelectorAll('[data-food]').forEach(n=>n.replaceWith(foodArt(n.dataset.food)));
+  root.querySelectorAll('.ib,.note,.under,.counter').forEach(frame);root.querySelectorAll('.opt.sel').forEach(circle)}
+function setHTML(el,html){el.querySelectorAll('.ib,.note,.under,.counter').forEach(s=>RO.unobserve(s));el.innerHTML=html;inkify(el)}
+function circle(el){el.querySelectorAll(':scope>.mk').forEach(m=>m.remove());const w=el.offsetWidth+20,h=el.offsetHeight+12;if(w<24){setTimeout(()=>{if(el.classList.contains('sel'))circle(el)},120);return}el.append(QA.circleSvg(w,h,Math.random()*1e9|0))}
+function optSel(box,b){box.querySelectorAll('.opt').forEach(x=>{x.classList.toggle('sel',x===b);if(x!==b)x.querySelectorAll('.mk').forEach(m=>m.remove())});circle(b)}
 
-/* ================= doodles ================= */
-let seedN=1;
-function doodle(vb,draw,pad=14,cutout=true){
-  const svg=mk('svg',{viewBox:vb,class:'d','aria-hidden':'true'});if(!window.rough)return svg;
-  const rc=rough.svg(svg),sil=mk('g');
-  for(let f=0;f<3;f++){const g=mk('g',{class:'v v'+f});const base=(seedN+=7)*13;let k=0;
-    const o=(x={})=>({stroke:INK,strokeWidth:1.9,roughness:2.1,bowing:2.4,fill:x.fill||'none',fillStyle:'hachure',hachureGap:5,fillWeight:1.3,...x,seed:base+(k++)*31+1});
-    draw((m,...a)=>{const n=rc[m](...a);g.append(n);return n},o,f===0?(t,a)=>sil.append(mk(t,a)):()=>{});svg.append(g)}
-  if(!cutout)return svg;
-  const base=svg.querySelector('.v0').cloneNode(true);base.setAttribute('class','');base.prepend(...sil.childNodes);
-  const paint=(g,c)=>g.querySelectorAll('*').forEach(p=>{if(p.tagName==='g')return;p.setAttribute('stroke',c);p.setAttribute('stroke-width',pad);p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');p.setAttribute('fill',c)});
-  const tex=base.cloneNode(true);paint(base,PAPER);paint(tex,'url(#p-noise)');
-  const cut=mk('g',{filter:'url(#torn)'});cut.append(base,tex);svg.prepend(cut);return svg}
+if(!reduce){let f=0;setInterval(()=>{f^=1;document.body.dataset.f=f},170)}
 
-const FOODS=[
-{id:'toast',n:'Toast',p:2,d:(d,o,S)=>{S('rect',{x:16,y:24,width:68,height:58});d('path','M18 82 L18 44 C10 40 12 22 30 22 C40 14 62 14 72 22 C90 22 90 40 82 44 L82 82 Z',o());d('path','M24 76 L24 46 C18 42 20 30 32 30 C42 22 60 22 68 30 C80 30 80 42 76 46 L76 76',o({strokeWidth:1.3}));d('circle',64,64,3,o({fill:INK,fillStyle:'solid'}));d('circle',70,60,2,o({fill:INK,fillStyle:'solid'}))}},
-{id:'cereal',n:'Cereálie',p:5,d:(d,o,S)=>{S('polygon',{points:'22,26 74,18 82,88 30,94'});d('polygon',[[22,26],[74,18],[82,88],[30,94]],o());d('polygon',[[22,26],[30,10],[70,6],[74,18]],o({strokeWidth:1.5}));d('arc',48,62,34,22,0,Math.PI,false,o({fill:INK,hachureGap:4}));for(const [x,y] of [[40,42],[52,38],[60,46],[46,50]])d('circle',x,y,6,o())}},
-{id:'yogurt',n:'Jogurt',p:12,d:(d,o,S)=>{S('polygon',{points:'24,32 76,32 68,88 32,88'});d('polygon',[[24,32],[76,32],[68,88],[32,88]],o());d('ellipse',50,32,54,12,o());d('line',30,56,70,56,o({strokeWidth:1.4}));d('line',58,8,52,40,o({strokeWidth:2.4}));d('ellipse',59,8,9,6,o())}},
-{id:'juice',n:'Džus',p:25,d:(d,o,S)=>{S('polygon',{points:'28,24 72,24 66,90 34,90'});d('polygon',[[28,24],[72,24],[66,90],[34,90]],o());d('polygon',[[30,48],[70,48],[66,88],[34,88]],o({fill:INK,fillStyle:'zigzag',hachureGap:5,stroke:'none'}));d('line',58,6,52,60,o({strokeWidth:2.6}));d('circle',74,26,18,o())}},
-{id:'waffle',n:'Vafle',p:50,d:(d,o,S)=>{S('rect',{x:16,y:22,width:68,height:60});d('rectangle',16,22,68,60,o({strokeWidth:2.2}));for(let i=1;i<4;i++){d('line',16+i*17,22,16+i*17,82,o({strokeWidth:1.4}));d('line',16,22+i*15,84,22+i*15,o({strokeWidth:1.4}))}}},
-{id:'pancake',n:'Palačinky',p:90,d:(d,o,S)=>{S('ellipse',{cx:50,cy:62,rx:40,ry:26});for(const y of [76,64,52])d('ellipse',50,y,78,18,o());d('rectangle',42,36,16,10,o({fill:INK,fillStyle:'cross-hatch',hachureGap:3}));d('path','M30 52 C30 62 26 66 28 72',o({strokeWidth:2.4}))}},
-{id:'omelette',n:'Omeleta',p:160,d:(d,o,S)=>{S('circle',{cx:44,cy:54,r:34});d('circle',44,54,68,o({strokeWidth:2.2}));d('line',76,62,98,76,o({strokeWidth:4}));d('path','M26 50 C24 34 46 30 54 38 C66 40 66 62 52 66 C40 74 26 66 26 50 Z',o());d('circle',46,52,14,o({fill:INK,fillStyle:'solid'}))}},
-{id:'croissant',n:'Croissant',p:280,d:(d,o,S)=>{S('ellipse',{cx:50,cy:56,rx:42,ry:26});d('path','M10 66 C14 40 34 28 50 30 C66 28 86 40 90 66 C80 58 70 56 62 60 C56 54 44 54 38 60 C30 56 20 58 10 66 Z',o());for(const x of [30,44,58,72])d('line',x,34+Math.abs(x-50)/3,x+(x<50?4:-4),58,o({strokeWidth:1.4}))}}];
-const food=id=>FOODS.find(f=>f.id===id);
-const ICONS={
- tables:(d,o,S)=>{S('rect',{x:8,y:30,width:84,height:50});d('polygon',[[18,34],[82,34],[92,50],[8,50]],o({fill:INK,hachureGap:7}));d('line',12,50,14,86,o());d('line',88,50,86,86,o())},
- restock:(d,o,S)=>{S('rect',{x:14,y:26,width:72,height:60});d('rectangle',14,34,72,52,o());d('line',14,34,26,20,o());d('line',86,34,74,20,o());d('line',26,20,74,20,o());d('line',14,52,86,52,o({strokeWidth:1.3}));d('line',14,68,86,68,o({strokeWidth:1.3}))},
- patience:(d,o,S)=>{S('rect',{x:24,y:12,width:52,height:78});d('rectangle',28,14,40,40,o({fill:INK,fillStyle:'zigzag',hachureGap:6}));d('line',24,56,76,56,o({strokeWidth:2.4}));d('line',28,56,26,90,o());d('line',72,56,74,90,o())},
- traffic:(d,o,S)=>{S('polygon',{points:'14,40 70,14 70,86 14,62'});d('polygon',[[16,40],[68,16],[68,84],[16,62]],o());d('rectangle',8,40,10,22,o({fill:INK,fillStyle:'solid'}));d('arc',76,50,24,36,-1,1,false,o());d('arc',80,50,40,56,-1,1,false,o())},
- happy:(d,o,S)=>{S('circle',{cx:50,cy:50,r:38});d('circle',50,50,74,o());d('line',50,50,50,26,o({strokeWidth:2.4}));d('line',50,50,66,58,o({strokeWidth:2.4}))},
- fill:(d,o,S)=>{S('rect',{x:18,y:22,width:64,height:68});d('polygon',[[20,36],[80,36],[76,88],[24,88]],o({fill:INK,fillStyle:'cross-hatch',hachureGap:7}));d('arc',50,36,30,28,Math.PI,2*Math.PI,false,o({strokeWidth:2.4}))},
- freeze:(d,o,S)=>{S('circle',{cx:50,cy:50,r:40});for(let i=0;i<3;i++){const a=i/3*Math.PI;d('line',50-Math.cos(a)*36,50-Math.sin(a)*36,50+Math.cos(a)*36,50+Math.sin(a)*36,o({strokeWidth:2.2}))}d('circle',50,50,14,o())},
- lock:(d,o,S)=>{S('rect',{x:20,y:16,width:60,height:72});d('rectangle',22,44,56,42,o({fill:INK,hachureGap:6}));d('arc',50,44,36,44,Math.PI,2*Math.PI,false,o({strokeWidth:2.4}))}};
-const DZC={};
-function dz(name){if(!DZC[name]){const [k,v]=name.split(':');
-  DZC[name]=k==='food'?doodle('0 0 100 100',food(v).d,12):k==='icon'?doodle('0 0 100 100',ICONS[v],12):
-   k==='deco'?doodle('0 0 300 30',(d,o)=>{d('curve',[[6,18],[80,10],[160,20],[230,9],[294,16]],o({strokeWidth:3}));d('curve',[[30,24],[120,16],[200,24],[270,18]],o({strokeWidth:1.6}))},0,false):
-   k==='mark'?doodle('0 0 100 40',v==='ok'?(d,o)=>d('ellipse',50,20,96,36,o({strokeWidth:2.6,roughness:2.6})):(d,o)=>{d('line',4,26,96,12,o({strokeWidth:2.6}));d('line',6,16,94,28,o({strokeWidth:2}))},0,false):mk('svg')}
-  const c=DZC[name].cloneNode(true);if(name.startsWith('mark')){c.setAttribute('class','d mark');c.setAttribute('preserveAspectRatio','none');c.querySelectorAll('path').forEach(p=>p.setAttribute('vector-effect','non-scaling-stroke'))}return c}
-
-function tableSvg(){return doodle('0 0 200 120',(d,o,S)=>{S('polygon',{points:'24,22 176,22 194,50 6,50'});
-  d('polygon',[[24,22],[176,22],[194,50],[6,50]],o({fill:INK,hachureGap:8,hachureAngle:-12,strokeWidth:2.2}));
-  d('line',14,50,16,112,o({strokeWidth:2.2}));d('line',186,50,184,112,o({strokeWidth:2.2}));d('line',40,50,42,96,o({strokeWidth:1.8}));d('line',160,50,158,96,o({strokeWidth:1.8}))},14)}
-
-function heroGirl(){return doodle('0 0 200 300',(d,o,S)=>{
-  S('circle',{cx:100,cy:88,r:48});S('polygon',{points:'84,138 116,138 150,236 50,236'});S('rect',{x:62,y:232,width:76,height:22});
-  S('ellipse',{cx:30,cy:62,rx:28,ry:22});S('ellipse',{cx:170,cy:62,rx:28,ry:22});S('ellipse',{cx:38,cy:165,rx:15,ry:32});
-  d('curve',[[55,82],[62,50],[95,38],[135,46],[148,80]],o({strokeWidth:2.2}));
-  for(const [a,b] of [[[56,66],[14,48]],[[56,70],[10,66]],[[58,74],[18,84]],[[144,66],[186,48]],[[144,70],[190,66]],[[142,74],[182,84]]])d('line',...a,...b,o());
-  d('circle',100,88,96,o({strokeWidth:2.2}));d('circle',84,80,5,o({fill:INK,fillStyle:'solid'}));d('circle',116,80,5,o({fill:INK,fillStyle:'solid'}));
-  d('arc',100,96,46,30,.25,Math.PI-.25,false,o({strokeWidth:2.2}));
-  d('polygon',[[84,138],[116,138],[150,236],[50,236]],o({fill:INK,hachureGap:6,hachureAngle:-38}));
-  d('rectangle',62,236,76,16,o({fill:INK,fillStyle:'zigzag',hachureGap:4}));
-  d('line',88,150,44,198,o());d('line',112,150,158,196,o());d('linearPath',[[158,196],[168,190]],o());d('linearPath',[[158,196],[166,204]],o());
-  d('line',86,252,84,284,o());d('line',114,252,116,284,o());
-  d('ellipse',78,288,24,11,o({fill:INK,fillStyle:'solid'}));d('ellipse',122,288,24,11,o({fill:INK,fillStyle:'solid'}));
-  d('ellipse',38,160,26,62,o({fill:INK,hachureGap:7,hachureAngle:50}));d('line',40,190,46,236,o({strokeWidth:2.4}))},16)}
-
-function person(seed){
-  const R=rng(seed),pick=a=>a[R()*a.length|0],rr=(a,b)=>a+R()*(b-a);
-  if(R()<.15)return animal(R,pick,rr);
-  const hr=rr(36,50),hx=100+rr(-4,4),hy=34+hr+rr(0,10),top=hy+hr-2;
-  const body=pick(['dress','shirt','round','coat']),hair=pick(['pigtails','spiky','curly','long','bun','cap','mohawk','bob','tophat','bow','messy']);
-  const held=pick(['popsicle','balloon','coffee','bag','flower','icecream','none','none']);
-  const fs=pick([{fillStyle:'hachure'},{fillStyle:'zigzag'},{fillStyle:'cross-hatch'},{fillStyle:'dots',hachureGap:6},{fillStyle:'solid'},{fillStyle:'zigzag-line',hachureGap:7}]);
-  const bf={fill:INK,hachureAngle:rr(-60,60),hachureGap:rr(4,7),...fs};
-  const eyes=pick(['dots','rings','happy','dots']),mouth=pick(['smile','smile','open','wavy','o','tongue']);
-  const glasses=R()<.22,beard=body!=='dress'&&R()<.18,freck=R()<.2,band=R()<.5,waveL=R()<.25,waveR=R()<.3;
-  const curls=[];for(let i=0;i<=8;i++){const a=Math.PI+i/8*Math.PI;curls.push([hx+Math.cos(a)*(hr+4),hy+Math.sin(a)*(hr+4),rr(16,24)])}
-  const messy=[];for(let i=0;i<14;i++){const a=Math.PI*rr(.9,2.1),r2=hr+rr(10,26);messy.push([hx+Math.cos(a)*hr*.6,hy+Math.sin(a)*hr*.6,hx+Math.cos(a)*r2,hy+Math.sin(a)*r2])}
-  const fr=[];for(let i=0;i<6;i++)fr.push([hx+(i<3?-1:1)*rr(14,26),hy+rr(6,14)]);
-  return doodle('0 0 200 300',(d,o,S)=>{
-    S('circle',{cx:hx,cy:hy,r:hr});S('ellipse',{cx:hx,cy:hy-hr*.4,rx:hr+18,ry:hr*.9});
-    if(body==='dress'){S('polygon',{points:`${hx-14},${top} ${hx+14},${top} ${hx+50},238 ${hx-50},238`});d('polygon',[[hx-14,top],[hx+14,top],[hx+50,236],[hx-50,236]],o(bf));if(band)d('rectangle',hx-48,236,96,14,o({fill:INK,fillStyle:'zigzag',hachureGap:4}))}
-    if(body==='shirt'){S('rect',{x:hx-32,y:top,width:64,height:284-top});d('rectangle',hx-30,top,60,62,o(bf));d('rectangle',hx-28,top+62,26,284-top-62,o({fill:INK,hachureGap:5}));d('rectangle',hx+2,top+62,26,284-top-62,o({fill:INK,hachureGap:5}))}
-    if(body==='round'){S('ellipse',{cx:hx,cy:(top+240)/2,rx:52,ry:(240-top)/2+6});d('ellipse',hx,(top+240)/2,102,240-top+10,o(bf))}
-    if(body==='coat'){S('polygon',{points:`${hx-22},${top} ${hx+22},${top} ${hx+40},242 ${hx-40},242`});d('polygon',[[hx-22,top],[hx+22,top],[hx+40,240],[hx-40,240]],o(bf));for(const y of [top+24,top+50,top+76])d('circle',hx,y,7,o({fill:PAPER,fillStyle:'solid'}))}
-    if(body!=='shirt'){d('line',hx-14,236,hx-16,284,o());d('line',hx+14,236,hx+16,284,o())}
-    d('ellipse',hx-20,288,26,11,o({fill:INK,fillStyle:'solid'}));d('ellipse',hx+20,288,26,11,o({fill:INK,fillStyle:'solid'}));
-    const sy=top+14,hl=[hx-56,waveL?top-26:top+58],hrr=[hx+56,waveR?top-26:top+58];
-    d('line',hx-18,sy,...hl,o());d('line',hx+18,sy,...hrr,o());d('linearPath',[hrr,[hrr[0]+9,hrr[1]-6]],o());d('linearPath',[hrr,[hrr[0]+8,hrr[1]+7]],o());
-    const [x,y]=hl;
-    if(held==='popsicle'){S('ellipse',{cx:x-2,cy:y-36,rx:16,ry:32});d('ellipse',x-2,y-36,26,58,o({fill:INK,hachureGap:7,hachureAngle:50}));d('line',x,y-8,x+3,y+22,o({strokeWidth:2.4}))}
-    if(held==='balloon'){S('circle',{cx:x-8,cy:y-92,r:26});d('circle',x-8,y-92,50,o({fill:INK,hachureGap:8}));d('curve',[[x-8,y-67],[x-2,y-45],[x-10,y-22],[x,y]],o({strokeWidth:1.3}))}
-    if(held==='coffee'){S('rect',{x:x-16,y:y-28,width:34,height:40});d('rectangle',x-14,y-8,24,28,o());d('arc',x+12,y+6,14,14,-1.6,1.6,false,o());d('curve',[[x-6,y-12],[x-10,y-20],[x-4,y-28]],o({strokeWidth:1.3}))}
-    if(held==='bag'){S('rect',{x:x-22,y:y-8,width:42,height:46});d('rectangle',x-18,y+6,34,30,o({fill:INK,fillStyle:'zigzag',hachureGap:5}));d('arc',x-1,y+6,22,22,Math.PI,2*Math.PI,false,o())}
-    if(held==='flower'){S('circle',{cx:x,cy:y-40,r:20});d('line',x,y+6,x+1,y-30,o());d('circle',x,y-40,12,o({fill:INK,fillStyle:'solid'}));for(let i=0;i<5;i++){const a=i/5*6.28;d('circle',x+Math.cos(a)*12,y-40+Math.sin(a)*12,12,o())}}
-    if(held==='icecream'){S('circle',{cx:x,cy:y-30,r:22});d('polygon',[[x-12,y-22],[x+12,y-22],[x+1,y+14]],o({fill:INK,fillStyle:'cross-hatch',hachureGap:5}));d('circle',x,y-34,30,o())}
-    if(hair==='long'){for(const sd of [-1,1])for(let i=0;i<4;i++)d('line',hx+sd*(hr-6+i*3),hy-hr*.4,hx+sd*(hr+2+i*4),hy+hr+18,o({strokeWidth:1.5}))}
-    if(hair==='bun')d('circle',hx,hy-hr-12,34,o({fill:INK,hachureGap:4}));
-    d('circle',hx,hy,hr*2,o({strokeWidth:2.2}));
-    const ey=hy-4,ex=hr*.36;
-    for(const s of [-1,1]){const cx=hx+s*ex;
-      if(eyes==='dots')d('circle',cx,ey,5,o({fill:INK,fillStyle:'solid'}));
-      if(eyes==='rings'){d('circle',cx,ey,12,o());d('circle',cx,ey,3,o({fill:INK,fillStyle:'solid'}))}
-      if(eyes==='happy')d('arc',cx,ey+3,12,10,Math.PI,2*Math.PI,false,o())}
-    if(glasses){d('circle',hx-ex,ey,22,o());d('circle',hx+ex,ey,22,o());d('line',hx-ex+11,ey,hx+ex-11,ey,o())}
-    const my=hy+hr*.35;
-    if(mouth==='smile')d('arc',hx,my-6,hr*.9,hr*.6,.25,Math.PI-.25,false,o({strokeWidth:2.2}));
-    if(mouth==='open')d('arc',hx,my-4,hr*.7,hr*.6,0,Math.PI,true,o({fill:INK,fillStyle:'solid'}));
-    if(mouth==='wavy')d('curve',[[hx-14,my],[hx-5,my-4],[hx+5,my+3],[hx+14,my-1]],o());
-    if(mouth==='o')d('circle',hx,my,12,o());
-    if(mouth==='tongue'){d('arc',hx,my-6,hr*.8,hr*.5,.25,Math.PI-.25,false,o());d('arc',hx+4,my+4,12,14,0,Math.PI,true,o({fill:INK,hachureGap:3}))}
-    if(freck)for(const [a,b] of fr)d('circle',a,b,2.5,o({fill:INK,fillStyle:'solid'}));
-    if(beard)d('path',`M${hx-hr*.7} ${hy+hr*.2} C${hx-hr*.6} ${hy+hr+24} ${hx+hr*.6} ${hy+hr+24} ${hx+hr*.7} ${hy+hr*.2} C${hx+hr*.3} ${hy+hr*.6} ${hx-hr*.3} ${hy+hr*.6} ${hx-hr*.7} ${hy+hr*.2}Z`,o({fill:INK,fillStyle:'zigzag',hachureGap:3}));
-    const fringe=()=>d('curve',[[hx-hr+4,hy-hr*.2],[hx-hr*.6,hy-hr*.9],[hx,hy-hr-4],[hx+hr*.6,hy-hr*.85],[hx+hr-4,hy-hr*.2]],o({strokeWidth:2.2}));
-    if(hair==='pigtails'){fringe();for(const s of [-1,1])for(const dy of [-8,0,8])d('line',hx+s*(hr-2),hy-hr*.3+dy*.4,hx+s*(hr+36),hy-hr*.3+dy*1.6,o())}
-    if(hair==='spiky'){const p=[];for(let i=0;i<=10;i++){const a=Math.PI*1.05+i/10*Math.PI*.9,r=hr+(i%2?18:2);p.push([hx+Math.cos(a)*r,hy+Math.sin(a)*r])}d('linearPath',p,o({strokeWidth:2.2}))}
-    if(hair==='curly')for(const [a,b,c] of curls)d('circle',a,b,c,o());
-    if(hair==='long'||hair==='bun')fringe();
-    if(hair==='cap'){d('arc',hx,hy-hr*.3,hr*2+6,hr*1.5,Math.PI,2*Math.PI,true,o({fill:INK,fillStyle:'solid'}));d('line',hx,hy-hr*.3,hx+hr+30,hy-hr*.25,o({strokeWidth:3}))}
-    if(hair==='mohawk')for(let i=-3;i<=3;i++)d('line',hx+i*6,hy-hr+Math.abs(i)*2,hx+i*7,hy-hr-24+Math.abs(i)*3,o({strokeWidth:2.4}));
-    if(hair==='bob')d('arc',hx,hy-hr*.15,hr*2+18,hr*1.9,Math.PI*.95,Math.PI*2.05,true,o({fill:INK,hachureGap:4,hachureAngle:80}));
-    if(hair==='tophat'){S('rect',{x:hx-30,y:hy-hr-50,width:60,height:52});d('rectangle',hx-24,hy-hr-46,48,40,o({fill:INK,fillStyle:'solid'}));d('line',hx-40,hy-hr-4,hx+40,hy-hr-6,o({strokeWidth:3}))}
-    if(hair==='bow'){fringe();d('polygon',[[hx+14,hy-hr-2],[hx+40,hy-hr-18],[hx+40,hy-hr+12]],o({fill:INK,fillStyle:'cross-hatch',hachureGap:4}));d('polygon',[[hx+14,hy-hr-2],[hx-10,hy-hr-18],[hx-10,hy-hr+12]],o({fill:INK,fillStyle:'cross-hatch',hachureGap:4}))}
-    if(hair==='messy')for(const [a,b,c,e] of messy)d('line',a,b,c,e,o({strokeWidth:1.6}));
-  },16)}
-function animal(R,pick,rr){const cat=R()<.5,hx=100,hy=120,hr=rr(36,44),bf={fill:INK,hachureGap:rr(5,8),hachureAngle:rr(-50,50),fillStyle:pick(['hachure','zigzag','cross-hatch'])};
-  return doodle('0 0 200 300',(d,o,S)=>{S('circle',{cx:hx,cy:hy,r:hr+8});S('ellipse',{cx:hx,cy:212,rx:54,ry:72});
-    d('curve',[[hx+44,250],[hx+78,232],[hx+70,196],[hx+84,180]],o({strokeWidth:2.4}));
-    d('ellipse',hx,212,104,148,o(bf));d('line',hx-18,232,hx-20,284,o());d('line',hx+18,232,hx+20,284,o());
-    d('ellipse',hx-22,286,24,10,o({fill:INK,fillStyle:'solid'}));d('ellipse',hx+22,286,24,10,o({fill:INK,fillStyle:'solid'}));
-    if(cat){d('polygon',[[hx-hr+4,hy-hr*.5],[hx-hr+8,hy-hr-22],[hx-hr*.3,hy-hr+4]],o({fill:INK,hachureGap:4}));d('polygon',[[hx+hr-4,hy-hr*.5],[hx+hr-8,hy-hr-22],[hx+hr*.3,hy-hr+4]],o({fill:INK,hachureGap:4}))}
-    else{d('ellipse',hx-hr,hy-4,22,50,o({fill:INK,fillStyle:'solid'}));d('ellipse',hx+hr,hy-4,22,50,o({fill:INK,fillStyle:'solid'}))}
-    d('circle',hx,hy,hr*2,o({strokeWidth:2.2}));d('circle',hx-14,hy-6,6,o({fill:INK,fillStyle:'solid'}));d('circle',hx+14,hy-6,6,o({fill:INK,fillStyle:'solid'}));
-    d('ellipse',hx,hy+8,12,8,o({fill:INK,fillStyle:'solid'}));d('arc',hx-6,hy+12,12,10,0,Math.PI,false,o());d('arc',hx+6,hy+12,12,10,0,Math.PI,false,o());
-    if(cat)for(const s of [-1,1])for(const dy of [-4,4])d('line',hx+s*12,hy+10,hx+s*44,hy+10+dy*2,o({strokeWidth:1.2}));
-    else d('arc',hx,hy+22,14,16,0,Math.PI,true,o({fill:INK,hachureGap:3}))},16)}
-
-/* boil */
-if(!reduce){let f=0;setInterval(()=>{f=(f+1)%3;document.body.dataset.f=f},130)}
-
-/* ================= transitions ================= */
-const wipe=$('#wipe'),ws=$('#wipe-svg');let busy=false;
-function sheetD(W,H,R){const e=x0=>{const p=[],ph=R()*6;for(let y=-20;y<=H+20;y+=12)p.push([x0+6*Math.sin(y/40+ph)+(R()*2-1)*6,y]);return p};return toD([...e(0),...e(W).reverse()])}
-function wipeDo(fn){if(reduce||busy){fn();return}busy=true;
-  const W=innerWidth*1.1,H=innerHeight,R=rng(Math.random()*1e9|0);
-  ws.setAttribute('width',W);ws.setAttribute('height',H);ws.setAttribute('viewBox',`0 0 ${W} ${H}`);ws.innerHTML='';
-  const sh=mk('path',{fill:'rgba(0,0,0,.12)',transform:'translate(-7 3)'}),pg=mk('path',{fill:'#fbfaf3'}),ln=mk('path',{fill:'url(#p-lines)'}),nz=mk('path',{fill:'url(#p-noise)'});
-  ws.append(sh,pg,ln,nz,mk('line',{x1:44,x2:44,y1:0,y2:H,stroke:'#d98a8a','stroke-width':1.4,opacity:.7}));
-  wipe.style.display='block';const steps=6,from=innerWidth+30,mid=-(W-innerWidth)/2,to=-W-40;let i=0;
-  const fr=()=>{const d=sheetD(W,H,R);for(const p of [sh,pg,ln,nz])p.setAttribute('d',d);
-    const half=i<=steps,t=half?i/steps:(i-steps)/steps,x=half?from+(mid-from)*t:mid+(to-mid)*t;
-    ws.style.transform=`translateX(${x.toFixed(0)}px) rotate(${(R()*2-1).toFixed(2)}deg)`;
-    if(i===steps){try{fn()}catch(e){console.error(e)}}
-    if(i++<steps*2)setTimeout(fr,i===steps+1?170:85);else{wipe.style.display='none';busy=false}};fr()}
-let curScr='home';
-function show(id,anim=true){const sw=()=>{document.querySelectorAll('.scr').forEach(s=>s.hidden=s.id!=='s-'+id);curScr=id;window.scrollTo(0,0)};
-  if(anim&&id!==curScr)wipeDo(sw);else sw()}
+let busy=false,curScr='home';
+function iris(fn){if(reduce||busy){fn();return}busy=true;const el=$('#iris');el.style.display='block';const seq=[120,70,35,12,0,0,12,35,70,120];let i=0;
+  const st=()=>{el.style.setProperty('--ir',seq[i]+'%');if(i===4){try{fn()}catch(e){console.error(e)}}if(++i<seq.length)setTimeout(st,i===5?90:55);else{el.style.display='none';busy=false}};st()}
+function show(id,anim=true){const sw=()=>{document.querySelectorAll('.scr').forEach(s=>s.hidden=s.id!=='s-'+id);$('#bnav').hidden=id!=='game';curScr=id;window.scrollTo(0,0)};
+  if(anim&&id!==curScr)iris(sw);else sw()}
 let toastT=0;
-function toast(t){$('#toast-t').textContent=t;const el=$('#toast');el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),1600)}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),1600)}
 
-/* ================= sets ================= */
 const DEMO={id:'demo',name:'Ukázka: Fotosyntéza',questions:[
 {q:'Kde v buňce probíhá fotosyntéza?',a:['V chloroplastech','V mitochondriích','V jádře','V ribozomech']},
 {q:'Který plyn rostlina při fotosyntéze přijímá?',a:['Oxid uhličitý','Kyslík','Dusík','Vodík']},
@@ -457,8 +304,8 @@ const DEMO={id:'demo',name:'Ukázka: Fotosyntéza',questions:[
 let sets=store.get('cafe.sets',[]);
 const allSets=()=>[...sets,DEMO],saveSets=()=>store.set('cafe.sets',sets);
 let flow='single',pickedSet=null,mode='time',val=5,lastCfg=null;
-function renderSets(){setHTML($('#sets-list'),allSets().map(s=>`<div class="scrap rowi"><button class="plain" data-pick="${esc(s.id)}"><b>${esc(s.name)}</b><small>${s.questions.length} otázek</small></button>
-  <button class="scrap btn sm" data-exp="${esc(s.id)}">Kopírovat</button>${s.id==='demo'?'':`<button class="scrap btn sm" data-rm="${esc(s.id)}">Smazat</button>`}</div>`).join(''))}
+function renderSets(){setHTML($('#sets-list'),allSets().map(s=>`<div class="under" style="padding:0"><div class="row"><button class="row" style="padding:0" data-pick="${esc(s.id)}"><span class="grow"><span class="rname">${esc(s.name)}</span><small>${s.questions.length} otázek</small></span></button>
+  <button class="link" data-exp="${esc(s.id)}">kopírovat</button>${s.id==='demo'?'':`<button class="link" data-rm="${esc(s.id)}">smazat</button>`}</div></div>`).join(''))}
 $('#sets-list').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.pick){pickedSet=allSets().find(s=>s.id===b.dataset.pick);openSetup()}
   if(b.dataset.rm){sets=sets.filter(s=>s.id!==b.dataset.rm);saveSets();renderSets()}
@@ -472,19 +319,16 @@ $('#imp-btn').addEventListener('click',()=>{let s=null;try{s=cleanSet(JSON.parse
   if(!s){toast('Neplatný JSON');return}sets.unshift({id:'s'+Date.now(),...s});saveSets();$('#imp-text').value='';renderSets();toast('Importováno')});
 $('#sets-back').addEventListener('click',()=>show(flow==='single'?'mode':'mp'));
 
-/* ================= navigation ================= */
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(!g)return;const to=g.dataset.go;
   if(to==='home'){if(mp)mpLeave();stopGame();show('home');return}
   if(to==='single'||to==='host'){flow=to;renderSets();show('sets');return}
   if(to==='sets'){renderSets();show('sets');return}
   if(to==='join'){$('#join-name').value=store.get('cafe.name','');show('join');return}
   show(to)});
-function chipSel(box,b){box.querySelectorAll('.chip').forEach(x=>x.classList.toggle('sel',x===b))}
 
-/* ================= generation ================= */
 let src='text',imgs=[],draft=null,qn=15;
-$('#gen-src').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;src=b.dataset.src;chipSel($('#gen-src'),b);$('#src-text-box').hidden=src!=='text';$('#src-img-box').hidden=src!=='img'});
-$('#q-count').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;qn=+b.dataset.n;chipSel($('#q-count'),b)});
+$('#gen-src').addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;src=b.dataset.src;optSel($('#gen-src'),b);$('#src-text-box').hidden=src!=='text';$('#src-img-box').hidden=src!=='img'});
+$('#q-count').addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;qn=+b.dataset.n;optSel($('#q-count'),b)});
 $('#src-img').addEventListener('change',e=>{imgs=[...e.target.files].slice(0,8);$('#thumbs').innerHTML='';for(const f of imgs){const im=new Image();im.src=URL.createObjectURL(f);im.alt='';$('#thumbs').append(im)}});
 async function shrink(f){try{const b=await createImageBitmap(f);const s=Math.min(1,1600/Math.max(b.width,b.height));const c=document.createElement('canvas');c.width=b.width*s|0;c.height=b.height*s|0;c.getContext('2d').drawImage(b,0,0,c.width,c.height);return await new Promise(r=>c.toBlob(x=>r(x||f),'image/jpeg',.85))}catch{return f}}
 $('#gen-btn').addEventListener('click',async()=>{const st=$('#gen-status'),btn=$('#gen-btn');
@@ -508,96 +352,109 @@ ${useImg?'':'\nPOZNÁMKY:\n'+text.slice(0,30000)}`;
     draft=s;$('#draft-name').value=s.name;renderDraft();$('#draft').hidden=false;st.textContent=`Hotovo: ${s.questions.length} otázek. Smaž, co se nehodí.`}
   catch(e){st.textContent=e&&e.code==='rate_limited'?'Moc požadavků, zkus to za chvíli.':e&&e.code==='not_granted'?'Generování nebylo povoleno.':'Generování selhalo. Zkus to znovu.'}
   finally{btn.disabled=false}});
-function renderDraft(){setHTML($('#draft-list'),draft.questions.map((q,i)=>`<div class="scrap rowi"><div class="grow"><b>${esc(q.q)}</b><small>✓ ${esc(q.a[0])} · ${q.a.slice(1).map(esc).join(' · ')}</small></div><button class="scrap btn sm" data-del="${i}">Smazat</button></div>`).join(''))}
+function renderDraft(){setHTML($('#draft-list'),draft.questions.map((q,i)=>`<div class="under" style="padding:0"><div class="row"><span class="grow"><b>${esc(q.q)}</b><small>správně: ${esc(q.a[0])} · ${q.a.slice(1).map(esc).join(' · ')}</small></span><button class="link" data-del="${i}">smazat</button></div></div>`).join(''))}
 $('#draft-list').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;draft.questions.splice(+b.dataset.del,1);renderDraft()});
 function saveDraft(){if(!draft||!draft.questions.length)return null;const s={id:'s'+Date.now(),name:$('#draft-name').value.trim()||draft.name,questions:draft.questions};
   sets.unshift(s);saveSets();draft=null;$('#draft').hidden=true;$('#gen-status').textContent='';return s}
 $('#draft-save').addEventListener('click',()=>{if(saveDraft()){toast('Uloženo');renderSets();show('sets')}});
 $('#draft-play').addEventListener('click',()=>{const s=saveDraft();if(s){pickedSet=s;openSetup()}});
 
-/* ================= setup ================= */
 const VALS={time:[[3,'3 min'],[5,'5 min'],[7,'7 min'],[10,'10 min']],goal:[[5000,'$5 000'],[10000,'$10 000'],[25000,'$25 000'],[50000,'$50 000']]};
-function fillVals(){val=VALS[mode][1][0];setHTML($('#val-chips'),VALS[mode].map(([v,t],i)=>`<button class="scrap chip${i===1?' sel':''}" data-v="${v}">${t}</button>`).join(''))}
-function openSetup(){$('#setup-title').textContent=flow==='host'?'Nová hra s kamarády':'Hra pro jednoho';$('#setup-set').textContent='Otázky: '+pickedSet.name;
-  $('#name-box').hidden=flow!=='host';$('#host-name').value=store.get('cafe.name','');$('#setup-go-t').textContent=flow==='host'?'Založit':'Začít';$('#setup-status').textContent='';
-  fillVals();show('setup')}
-$('#mode-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;mode=b.dataset.mode;chipSel($('#mode-chips'),b);fillVals()});
-$('#val-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;val=+b.dataset.v;chipSel($('#val-chips'),b)});
+function fillVals(){val=VALS[mode][1][0];setHTML($('#val-opts'),VALS[mode].map(([v,t],i)=>`<button class="opt${i===1?' sel':''}" data-v="${v}">${t}</button>`).join(''))}
+function openSetup(){$('#setup-title').textContent=flow==='host'?'Kavárna pro kamarády':'Kavárna pro jednoho';$('#setup-set').textContent='Otázky: '+pickedSet.name;
+  $('#name-box').hidden=flow!=='host';$('#host-name').value=store.get('cafe.name','');$('#setup-go-t').textContent=flow==='host'?'Založit':'Otevřít kavárnu';$('#setup-status').textContent='';
+  fillVals();show('setup');setTimeout(()=>{document.querySelectorAll('#s-setup .opt.sel').forEach(circle)},350)}
+$('#mode-opts').addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;mode=b.dataset.mode;optSel($('#mode-opts'),b);fillVals()});
+$('#val-opts').addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;val=+b.dataset.v;optSel($('#val-opts'),b)});
 $('#setup-go').addEventListener('click',()=>{if(!pickedSet)return;const cfg={set:{name:pickedSet.name,questions:pickedSet.questions},mode,val};
   if(flow==='single'){lastCfg=cfg;startGame(cfg);return}
   const name=$('#host-name').value.trim();if(!name){$('#setup-status').textContent='Napiš své jméno.';return}
   store.set('cafe.name',name);hostCreate(cfg,name)});
 
-/* ================= game data ================= */
+const FOODS=[{id:'toast',n:'Toast',p:2},{id:'cereal',n:'Cereálie',p:5},{id:'yogurt',n:'Jogurt',p:12},{id:'juice',n:'Džus',p:25},{id:'waffle',n:'Vafle',p:50},{id:'pancake',n:'Palačinky',p:90},{id:'omelette',n:'Omeleta',p:160},{id:'croissant',n:'Croissant',p:280}];
+const food=id=>FOODS.find(f=>f.id===id);
 const MAXLVL=5,price=(f,l)=>Math.round(f.p*(1+0.75*(l-1))),upCost=(f,l)=>Math.round(f.p*20*Math.pow(l,1.7));
 const UPG=[
 {id:'tables',n:'Víc stolů',icon:'tables',d:v=>v+' stolů',vals:[3,4,5,6],cost:[300,1500,5000]},
 {id:'restock',n:'Větší dodávka',icon:'restock',d:v=>'+'+v+' ks za správnou odpověď',vals:[5,8,12,17,24],cost:[200,800,2500,7000]},
 {id:'patience',n:'Pohodlný židle',icon:'patience',d:v=>'trpělivost ×'+v,vals:[1,1.3,1.6,2],cost:[250,1000,4000]},
-{id:'traffic',n:'Reklama',icon:'traffic',d:v=>'zákazník zhruba každé '+(v/1000)+' s',vals:[5000,4000,3000,2200],cost:[400,1500,5000]}];
+{id:'traffic',n:'Plakát na ulici',icon:'traffic',d:v=>'host zhruba každé '+(v/1000)+' s',vals:[5000,4000,3000,2200],cost:[400,1500,5000]}];
 const ABIL=[
-{id:'happy',n:'Šťastná hodinka',icon:'happy',d:'2× peníze za objednávky na 30 s',cost:400},
+{id:'happy',n:'Šťastná hodinka',icon:'happy',d:'30 s dvojnásobný tržby',cost:400},
 {id:'fill',n:'Velkej nákup',icon:'fill',d:'+10 ks od každýho jídla',cost:300},
-{id:'freeze',n:'Kafe zdarma',icon:'freeze',d:'zákazníkům 20 s neubývá trpělivost',cost:350}];
-const SEATX=[16.5,50,83.5];
+{id:'freeze',n:'Kafe zdarma',icon:'freeze',d:'20 s nikdo neztrácí trpělivost',cost:350}];
+const SEATX=[18,50,82];
 
-/* ================= game ================= */
 let G=null,loop=0;
 const upv=id=>{const u=UPG.find(x=>x.id===id);return u.vals[G.up[id]]};
 const abCost=a=>Math.round(a.cost*Math.pow(1.6,G.ab[a.id]||0));
 function startGame(cfg){stopGame();
   G={set:cfg.set,mode:cfg.mode,goal:cfg.mode==='goal'?cfg.val:0,dur:cfg.val*60000,endsAt:cfg.mode==='time'?(cfg.endsAt||Date.now()+cfg.val*60000):0,
     cash:0,stock:{toast:0},lvl:{toast:1},up:{tables:0,restock:0,patience:0,traffic:0},ab:{},happyUntil:0,freezeUntil:0,
-    cust:[],nextSpawn:Date.now()+2000,last:Date.now(),queue:[],q:null,answered:null,lockUntil:0,view:'stock',shopTab:'food',
+    cust:[],nextSpawn:Date.now()+2000,last:Date.now(),queue:[],q:null,answered:null,lockUntil:0,view:'stock',qn:0,
     stats:{ok:0,bad:0,served:0,left:0},mp:!!cfg.mp,over:false,uid:0};
-  $('#g-board').hidden=!G.mp;buildScene();renderPlates();nextQ();
+  $('#g-board').hidden=!G.mp;buildClock();buildScene();renderPlates();nextQ();
   show('game');setView('stock',false);renderTop();loop=setInterval(tick,200)}
-function stopGame(){clearInterval(loop);if(G)G.over=true;G=null;$('#scene').innerHTML=''}
-function setView(v,anim=true){const sw=()=>{G.view=v;for(const k of ['cafe','stock','shop'])$('#v-'+k).hidden=k!==v;
-    document.querySelectorAll('#g-tabs [data-view]').forEach(b=>b.classList.toggle('sel',b.dataset.view===v));
-    if(v==='stock')renderStock();if(v==='shop')renderShop();if(v==='cafe'){updatePlates();updateTickets()}};
-  if(anim&&G.view!==v)wipeDo(sw);else sw()}
-$('#g-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b&&G&&!G.over)setView(b.dataset.view)});
+function stopGame(){clearInterval(loop);if(G)G.over=true;G=null;scene.innerHTML=''}
+function setView(v,anim=true){G.view=v;for(const k of ['cafe','stock','shop'])$('#v-'+k).hidden=k!==v;
+  document.querySelectorAll('#bnav [data-view]').forEach(b=>{const on=b.dataset.view===v;b.classList.toggle('sel',on);const u=b.querySelector('.ul');
+    if(on&&!u){const s=QA.frameSvg(90,8,Math.random()*1e9|0,{under:true,ink:'#c4553f',w:3});s.setAttribute('class','ul');s.setAttribute('preserveAspectRatio','none');b.append(s)}if(!on&&u)u.remove()});
+  if(v==='stock')renderStock();if(v==='shop')renderShop();if(v==='cafe'){drawBg();updatePlates();updateTickets()}
+  if(anim&&!reduce){const p=$('#v-'+v);p.style.transform='translateY(4px)';p.style.opacity='.6';setTimeout(()=>{p.style.transform='';p.style.opacity=''},70)}}
+$('#bnav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b&&G&&!G.over)setView(b.dataset.view)});
 
-/* --- scene --- */
-const scene=$('#scene');
-new ResizeObserver(()=>{document.documentElement.style.setProperty('--W',(scene.clientWidth||Math.min(innerWidth-24,596))+'px')}).observe(scene);
-function buildScene(){scene.innerHTML='';for(let i=0;i<6;i++){const t=document.createElement('div');t.className='tbl r'+(i<3?0:1);t.style.left=SEATX[i%3]+'%';t.dataset.t=i;t.append(tableSvg());scene.append(t)}layoutTables()}
-function layoutTables(){const n=G?upv('tables'):3;scene.classList.toggle('two',n>3);scene.querySelectorAll('.tbl').forEach(t=>t.hidden=+t.dataset.t>=n)}
+function buildClock(){const s=$('#g-clock');s.innerHTML='';const T=Math.PI*2;
+  const wedge=(a0,a1,c,id)=>{const p=['M0 0'];for(let i=0;i<=12;i++){const a=a0+(a1-a0)*i/12-Math.PI/2;p.push(`L${(Math.cos(a)*26).toFixed(1)} ${(Math.sin(a)*26).toFixed(1)}`)}const e=mk('path',{d:p.join('')+'Z',fill:c});if(id)e.id=id;s.append(e)};
+  if(G.mode==='time'){wedge(0,T*.6,'#c9a54a');wedge(T*.6,T*.85,'#a3533a');wedge(T*.85,T,'#33415a')}else{wedge(0,T,'#d8c9a6');s.append(mk('path',{id:'clk-pie',fill:'#c9a54a'}))}
+  const ring=QA.art('-32 -32 64 64',A=>{A.ink(Array.from({length:16},(_,i)=>{const a=i/16*Math.PI*2-Math.PI/2;return[Math.cos(a)*27,Math.sin(a)*27]}),{closed:true,w:3})});
+  s.append(...[...ring.childNodes]);
+  const hand=mk('g',{id:'clk-hand'});hand.append(mk('path',{d:'M-2.2 3 L0 -22 L2.2 3 Z',fill:C.INK}),mk('circle',{r:3,fill:C.INK}));s.append(hand);
+  if(!$('#coin').firstChild)$('#coin').append(iconArt('coin'))}
+function updateClock(pct){$('#clk-hand').setAttribute('transform',`rotate(${(pct*360).toFixed(1)})`);
+  if(G.mode==='goal'){const p=['M0 0'];for(let i=0;i<=24;i++){const t=pct*Math.PI*2*i/24-Math.PI/2;p.push(`L${(Math.cos(t)*26).toFixed(1)} ${(Math.sin(t)*26).toFixed(1)}`)}$('#clk-pie').setAttribute('d',p.join('')+'Z')}}
+
+const scene=$('#scene');let bgKey='';
+new ResizeObserver(()=>{document.documentElement.style.setProperty('--W',(scene.clientWidth||Math.min(innerWidth,600))+'px');drawBg()}).observe(scene);
+function drawBg(){if(!G||!scene.clientWidth)return;const W=scene.clientWidth,H=scene.clientHeight,two=scene.classList.contains('two'),key=W+'x'+H+two;if(key===bgKey&&scene.querySelector('.bg'))return;bgKey=key;
+  const fy=two?H-W*.62:H-W*.28;const s=QA.sceneBg(W,H,fy,11);const old=scene.querySelector('.bg');old?old.replaceWith(s):scene.prepend(s)}
+function buildScene(){scene.innerHTML='';bgKey='';for(let i=0;i<6;i++){const t=document.createElement('div');t.className='tbl r'+(i<3?0:1);t.style.left=SEATX[i%3]+'%';t.dataset.t=i;t.append(QA.table());scene.append(t)}
+  const n=document.createElement('div');n.className='night';n.id='night';scene.append(n);layoutTables()}
+function layoutTables(){const n=G?upv('tables'):3;scene.classList.toggle('two',n>3);scene.querySelectorAll('.tbl').forEach(t=>t.hidden=+t.dataset.t>=n);bgKey='';drawBg()}
 const zOf=(seat,walking)=>seat<3?(walking?4:5):(walking?1:2);
-function walk(c,from,to,done){let i=0;const n=Math.max(6,Math.round(Math.abs(to-from)/9)),el=c.el;
-  const fr=()=>{if(!el.isConnected)return;const x=from+(to-from)*i/n,b=i%2?-6:0,r=i>=n?0:(i%2?5:-4);
+function walk(c,from,to,done){let i=0;const n=Math.max(6,Math.round(Math.abs(to-from)/8)),el=c.el;
+  const fr=()=>{if(!el.isConnected)return;const x=from+(to-from)*i/n,moving=i<n,b=moving&&i%2?-4:0,r=moving?(i%2?3:-2):0;
+    el.classList.toggle('step-a',moving&&i%2===0);el.classList.toggle('step-b',moving&&i%2===1);
     el.style.left=x+'%';el.style.transform=`translateX(-50%) translateY(${b}px) rotate(${r}deg)`;
-    if(i++<n)setTimeout(fr,reduce?0:115);else done&&done()};fr()}
-function spawn(){const used=new Set(G.cust.filter(c=>c.state!=='gone').map(c=>c.seat));let seat=-1;
-  const n=upv('tables');for(let i=0;i<n;i++)if(!used.has(i)){seat=i;break}if(seat<0)return;
+    if(i++<n)setTimeout(fr,reduce?0:120);else done&&done()};fr()}
+function spawn(){const used=new Set(G.cust.map(c=>c.seat));let seat=-1;const n=upv('tables');for(let i=0;i<n;i++)if(!used.has(i)){seat=i;break}if(seat<0)return;
   const un=FOODS.filter(f=>G.lvl[f.id]),k=1+(Math.random()*Math.min(3,un.length)|0);
   const pool=shuffle(un.flatMap((f,i)=>Array(i+1).fill(f))),pick=[];for(const f of pool){if(!pick.includes(f))pick.push(f);if(pick.length===k)break}
   const max=(22000+Math.random()*8000)*upv('patience');
   const c={id:++G.uid,seat,items:pick.map(f=>({id:f.id,q:1+(Math.random()*3|0),done:false})),pat:max,max,state:'walk'};
-  c.el=document.createElement('div');c.el.className='who r'+(seat<3?0:1);c.el.style.zIndex=zOf(seat,true);c.el.append(person(Math.random()*1e9|0));scene.append(c.el);
-  G.cust.push(c);walk(c,-22,SEATX[seat%3],()=>{if(!G||!G.cust.includes(c))return;c.state='seated';c.el.style.zIndex=zOf(seat,false);makeTicket(c)})}
-function makeTicket(c){const t=document.createElement('div');t.className='scrap ticket r'+(c.seat<3?0:1);t.style.left=SEATX[c.seat%3]+'%';t.dataset.c=c.id;scene.append(t);c.tk=t;paperize(t);fillTicket(c);
-  const sc=[.4,.8,1.08,1];let i=0;const pop=()=>{if(!t.isConnected)return;t.style.scale=sc[i];if(++i<sc.length)setTimeout(pop,90)};pop()}
+  c.el=document.createElement('div');c.el.className='who r'+(seat<3?0:1);c.el.style.zIndex=zOf(seat,true);c.el.append(QA.person(Math.random()*1e9|0));scene.append(c.el);
+  G.cust.push(c);walk(c,-20,SEATX[seat%3],()=>{if(!G||!G.cust.includes(c))return;c.state='seated';c.el.style.zIndex=zOf(seat,false);makeTicket(c)})}
+function makeTicket(c){const t=document.createElement('div');t.className='note ticket r'+(c.seat<3?0:1);t.style.left=SEATX[c.seat%3]+'%';scene.append(t);c.tk=t;fillTicket(c);frame(t);
+  const sc=[.5,1.1,1];let i=0;const pop=()=>{if(!t.isConnected)return;t.style.scale=sc[i];if(++i<sc.length)setTimeout(pop,80)};pop()}
 function fillTicket(c){if(!c.tk)return;c.tk.querySelectorAll('.tki,.pat').forEach(n=>n.remove());
-  const frag=document.createElement('div');frag.innerHTML=c.items.map((it,i)=>`<button class="tki${it.done?' done':''}${!it.done&&(G.stock[it.id]||0)<it.q?' short':''}" data-i="${i}" aria-label="${esc(food(it.id).n)} ${it.q}x"><span data-dz="food:${it.id}"></span>×${it.q}</button>`).join('')+`<div class="pat"><i></i></div>`;
-  hydrate(frag);c.tk.append(...frag.childNodes);updatePat(c)}
+  const box=document.createElement('div');box.innerHTML=c.items.map((it,i)=>`<button class="tki${it.done?' done':''}${!it.done&&(G.stock[it.id]||0)<it.q?' short':''}" data-i="${i}" aria-label="${esc(food(it.id).n)} ${it.q}x"><span data-food="${it.id}"></span>×${it.q}</button>`).join('')+'<div class="pat"><i></i></div>';
+  inkify(box);c.tk.append(...box.childNodes);updatePat(c)}
 function updatePat(c){const p=c.tk&&c.tk.querySelector('.pat');if(!p)return;const r=Math.max(0,c.pat/c.max);p.firstChild.style.width=r*100+'%';p.classList.toggle('low',r<.3)}
 function updateTickets(){if(!G)return;for(const c of G.cust)if(c.tk)fillTicket(c)}
+function moneyPop(c,amt){const p=document.createElement('div');p.className='pop';p.textContent='+'+fmt(amt);p.style.left=SEATX[c.seat%3]+'%';
+  const base=c.seat<3?scene.clientWidth*.5:scene.clientWidth*.86;scene.append(p);let i=0;const st=()=>{if(i>5){p.remove();return}p.style.bottom=(base+i*8)+'px';p.style.opacity=i>3?.5:1;i++;setTimeout(st,110)};st()}
 function leave(c,angry){c.state='gone';if(c.tk){RO.unobserve(c.tk);c.tk.remove();c.tk=null}G.cust=G.cust.filter(x=>x!==c);c.el.style.zIndex=zOf(c.seat,true);
-  walk(c,SEATX[c.seat%3],122,()=>c.el.remove());if(angry){G.stats.left++;toast('Zákazník odešel naštvanej')}}
-function serveItem(c,it){if(it.done)return true;if((G.stock[it.id]||0)<it.q){toast(`Málo: ${food(it.id).n}. Jdi do Zásob.`);return false}
+  walk(c,SEATX[c.seat%3],122,()=>c.el.remove());if(angry){G.stats.left++;toast('Host to vzdal a odešel')}}
+function serveItem(c,it){if(it.done)return true;if((G.stock[it.id]||0)<it.q){toast(`Málo jídla: ${food(it.id).n}. Doplň zásoby.`);return false}
   G.stock[it.id]-=it.q;it.done=true;if(c.items.every(i=>i.done)){let pay=c.items.reduce((s,i)=>s+price(food(i.id),G.lvl[i.id])*i.q,0);if(Date.now()<G.happyUntil)pay*=2;
-    G.cash+=pay;G.stats.served++;toast('+'+fmt(pay));leave(c,false)}else fillTicket(c);
+    G.cash+=pay;G.stats.served++;moneyPop(c,pay);leave(c,false)}else fillTicket(c);
   updatePlates();updateTickets();renderTop();return true}
 scene.addEventListener('click',e=>{const b=e.target.closest('.tki');if(!b||!G||G.over)return;const c=G.cust.find(x=>x.tk&&x.tk.contains(b));if(c)serveItem(c,c.items[+b.dataset.i])});
-function renderPlates(){setHTML($('#plates'),FOODS.filter(f=>G.lvl[f.id]).map(f=>`<button class="scrap plate" data-plate="${f.id}"><span data-dz="food:${f.id}"></span><span><b data-cnt="${f.id}">0</b>× ${esc(f.n)}</span></button>`).join(''));updatePlates()}
+function renderPlates(){setHTML($('#plates'),FOODS.filter(f=>G.lvl[f.id]).map(f=>`<button class="plate" data-plate="${f.id}" aria-label="${esc(f.n)}"><span data-food="${f.id}"></span><b data-cnt="${f.id}">0</b></button>`).join(''));updatePlates()}
 function updatePlates(){document.querySelectorAll('[data-cnt]').forEach(b=>{const n=G.stock[b.dataset.cnt]||0;b.textContent=n;b.closest('.plate').classList.toggle('low',n<2)})}
 $('#plates').addEventListener('click',e=>{const b=e.target.closest('[data-plate]');if(!b||!G||G.over)return;const fid=b.dataset.plate;
   const cands=G.cust.filter(c=>c.state==='seated'&&c.items.some(i=>i.id===fid&&!i.done)).sort((a,b)=>a.pat/a.max-b.pat/b.max);
-  if(!cands.length){toast('Nikdo si to teď neobjednal');return}serveItem(cands[0],cands[0].items.find(i=>i.id===fid&&!i.done))});
+  if(!cands.length){toast('Tohle teď nikdo nechce');return}serveItem(cands[0],cands[0].items.find(i=>i.id===fid&&!i.done))});
 
-/* --- loop --- */
 function tick(){if(!G||G.over)return;const now=Date.now(),dt=now-G.last;G.last=now;
   for(const c of [...G.cust]){if(c.state!=='seated')continue;if(now>G.freezeUntil)c.pat-=dt;if(c.pat<=0)leave(c,true);else updatePat(c)}
   if(now>=G.nextSpawn){spawn();G.nextSpawn=now+upv('traffic')*(0.7+Math.random()*0.6)}
@@ -606,66 +463,65 @@ function tick(){if(!G||G.over)return;const now=Date.now(),dt=now-G.last;G.last=n
   renderTop();if(G.mp)mpPush(false);
   if(G.mode==='time'&&now>=G.endsAt)endGame();else if(G.mode==='goal'&&G.cash>=G.goal)endGame()}
 function renderTop(){if(!G)return;$('#g-cash').textContent=fmt(G.cash);let pct;
-  if(G.mode==='time'){const left=Math.max(0,G.endsAt-Date.now()),s=Math.ceil(left/1000);$('#g-meta').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;pct=100-left/G.dur*100}
-  else{$('#g-meta').textContent='cíl '+fmt(G.goal);pct=G.cash/G.goal*100}
-  $('#g-bar').style.width=Math.min(100,Math.max(0,pct))+'%';
-  const fx=[];if(Date.now()<G.happyUntil)fx.push('2× peníze');if(Date.now()<G.freezeUntil)fx.push('trpělivost zamrzlá');$('#g-fx').textContent=fx.join(' · ');
-  const w=G.cust.filter(c=>c.state==='seated').length,b=$('#b-cafe');b.hidden=!w;b.textContent=w}
+  if(G.mode==='time'){const left=Math.max(0,G.endsAt-Date.now()),s=Math.ceil(left/1000);$('#g-meta').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;pct=1-left/G.dur}
+  else{$('#g-meta').textContent='cíl '+fmt(G.goal);pct=G.cash/G.goal}
+  pct=Math.min(1,Math.max(0,pct));updateClock(pct);
+  const n=$('#night');if(n)n.style.opacity=G.mode==='time'?Math.min(.92,Math.max(0,(pct-.5)/.4)):0;
+  const fx=[];if(Date.now()<G.happyUntil)fx.push('šťastná hodinka, 2× tržby');if(Date.now()<G.freezeUntil)fx.push('kafe zdarma, nikdo nespěchá');$('#g-fx').textContent=fx.join(' · ');
+  const w=G.cust.filter(c=>c.state==='seated').length;$('#b-cafe').textContent=w||''}
 
-/* --- stock (quiz) --- */
 function nextQ(){if(!G.queue.length)G.queue=shuffle(G.set.questions.map((_,i)=>i));const q=G.set.questions[G.queue.pop()];
-  G.q={q:q.q,opts:shuffle(q.a.map((t,i)=>({t,ok:i===0})))};G.answered=null;if(G.view==='stock')renderStock()}
+  G.q={q:q.q,opts:shuffle(q.a.map((t,i)=>({t,ok:i===0})))};G.answered=null;G.qn++;if(G.view==='stock')renderStock()}
 function answer(i){if(G.answered!==null)return;G.answered=i;
   if(G.q.opts[i].ok){G.stats.ok++;const n=upv('restock');for(const f of FOODS)if(G.lvl[f.id])G.stock[f.id]=(G.stock[f.id]||0)+n;updatePlates();
     renderStock();setTimeout(()=>{if(G&&!G.over&&G.answered===i)nextQ()},850)}
   else{G.stats.bad++;G.lockUntil=Date.now()+2500;renderStock()}}
-function renderStock(){if(!G||!G.q)return;const q=G.q,a=G.answered,ok=a!==null&&q.opts[a].ok;
-  let h=`<div class="q">${esc(q.q)}</div><div class="ans">`+q.opts.map((o,i)=>{let m='';if(a!==null){if(o.ok)m='<span data-dz="mark:ok"></span>';else if(i===a)m='<span data-dz="mark:bad"></span>'}
-    return `<button class="scrap" data-a="${i}"${a!==null?' disabled style="opacity:1"':''}>${esc(o.t)}${m}</button>`}).join('')+'</div>';
-  h+=`<div class="fb">${a===null?'':ok?`Správně! +${upv('restock')} ks od každýho jídla`:'Vedle. Správná je ta zakroužkovaná.'}</div>`;
-  if(a!==null&&!ok)h+=`<button class="scrap btn" id="q-next"${Date.now()<G.lockUntil?' disabled':''}>Další otázka</button>`;
-  h+='<div class="minis">'+FOODS.filter(f=>G.lvl[f.id]).map(f=>`<span><span data-dz="food:${f.id}"></span>${G.stock[f.id]||0}</span>`).join('')+'</div>';
-  setHTML($('#v-stock'),h)}
+function renderStock(){if(!G||!G.q)return;const q=G.q,a=G.answered,ok=a!==null&&q.opts[a].ok,L='abcd';
+  let h=`<div class="qlab">Otázka ${G.qn}</div><div class="q">${esc(q.q)}</div><div class="ans">`+q.opts.map((o,i)=>`<div class="under" style="padding:0"><button class="arow" data-a="${i}"${a!==null?' disabled':''}><span class="lt">${L[i]})</span><span class="tx">${esc(o.t)}</span></button></div>`).join('')+'</div>';
+  h+=`<div class="fb">${a===null?'':ok?`Správně. +${upv('restock')} ks od každýho jídla.`:'Vedle. Správná je ta zakroužkovaná.'}</div>`;
+  if(a!==null&&!ok)h+=`<button class="ib dark" id="q-next"${Date.now()<G.lockUntil?' disabled':''}>Další otázka</button>`;
+  h+='<div class="minis">'+FOODS.filter(f=>G.lvl[f.id]).map(f=>`<span><span data-food="${f.id}"></span>${G.stock[f.id]||0}</span>`).join('')+'</div>';
+  setHTML($('#v-stock'),h);
+  if(a!==null)requestAnimationFrame(()=>{$('#v-stock').querySelectorAll('.arow').forEach((b,i)=>{const o=q.opts[i],lt=b.querySelector('.lt'),tx=b.querySelector('.tx');
+    if(o.ok){lt.append(QA.circleSvg(lt.offsetWidth+20,lt.offsetHeight+16,i*31+7));b.append(QA.checkSvg(i*13+3))}
+    else if(i===a)tx.append(QA.strikeSvg(tx.offsetWidth+12,tx.offsetHeight+8,i*17+5))})})}
 $('#v-stock').addEventListener('click',e=>{if(!G||G.over)return;const a=e.target.closest('[data-a]');if(a){answer(+a.dataset.a);return}if(e.target.closest('#q-next'))nextQ()});
 
-/* --- shop --- */
-function renderShop(){const t=G.shopTab;let h=`<div class="subtabs">${[['food','Jídlo'],['up','Vylepšení'],['ab','Schopnosti']].map(([k,n])=>`<button class="scrap chip${k===t?' sel':''}" data-tab="${k}">${n}</button>`).join('')}</div>`;
-  const btn=(key,cost,label)=>`<button class="scrap btn sm" data-buy="${key}" data-cost="${cost}"${G.cash<cost?' disabled':''}>${label||fmt(cost)}</button>`;
-  if(t==='food')h+=FOODS.map((f,i)=>{const l=G.lvl[f.id]||0;
-    if(!l){if(i&&!G.lvl[FOODS[i-1].id])return'';return `<div class="scrap rowi"><span data-dz="icon:lock"></span><div class="grow">${esc(f.n)}<small>odemkne se prvním vylepšením: ${esc(FOODS[i-1].n)}</small></div></div>`}
-    const inf=l>=MAXLVL?`${fmt(price(f,l))} za kus · max`:`${fmt(price(f,l))} → ${fmt(price(f,l+1))} za kus`;
-    return `<div class="scrap rowi"><span data-dz="food:${f.id}"></span><div class="grow">${esc(f.n)} · úroveň ${l}<small>${inf}</small></div>${l>=MAXLVL?'':btn('f:'+f.id,upCost(f,l))}</div>`}).join('');
-  if(t==='up')h+=UPG.map(u=>{const l=G.up[u.id],max=l>=u.cost.length;
-    return `<div class="scrap rowi"><span data-dz="icon:${u.icon}"></span><div class="grow">${u.n}<small>${u.d(u.vals[l])}${max?' · max':' → '+u.d(u.vals[l+1])}</small></div>${max?'':btn('u:'+u.id,u.cost[l])}</div>`}).join('');
-  if(t==='ab')h+=ABIL.map(a=>`<div class="scrap rowi"><span data-dz="icon:${a.icon}"></span><div class="grow">${a.n}<small>${a.d}</small></div>${btn('a:'+a.id,abCost(a))}</div>`).join('');
-  setHTML($('#v-shop'),h)}
-$('#v-shop').addEventListener('click',e=>{if(!G||G.over)return;const tb=e.target.closest('[data-tab]');if(tb){G.shopTab=tb.dataset.tab;renderShop();return}const b=e.target.closest('[data-buy]');if(b)buy(b.dataset.buy)});
+function renderShop(){const btn=(key,cost)=>`<button class="ib sm" data-buy="${key}" data-cost="${cost}"${G.cash<cost?' disabled':''}>${fmt(cost)}</button>`;
+  const row=(ic,name,sub,right)=>`<div class="row"><span ${ic}></span><span style="line-height:1.1"><span class="rname">${name}</span><small>${sub}</small></span><span class="lead"></span>${right}</div>`;
+  let h='<h2 style="margin-bottom:4px">Lístek</h2><h3>Jídlo</h3>';
+  h+=FOODS.map((f,i)=>{const l=G.lvl[f.id]||0;
+    if(!l){if(i&&!G.lvl[FOODS[i-1].id])return'';return row('data-ic="lock"',esc(f.n),'odemkne první vylepšení: '+esc(FOODS[i-1].n),'<span class="it mut small">zamčeno</span>')}
+    const inf=l>=MAXLVL?`${fmt(price(f,l))} za kus · nejlepší`:`úroveň ${l} · ${fmt(price(f,l))} → ${fmt(price(f,l+1))} za kus`;
+    return row(`data-food="${f.id}"`,esc(f.n),inf,l>=MAXLVL?'':btn('f:'+f.id,upCost(f,l)))}).join('');
+  h+='<h3>Vylepšení</h3>'+UPG.map(u=>{const l=G.up[u.id],max=l>=u.cost.length;return row(`data-ic="${u.icon}"`,u.n,u.d(u.vals[l])+(max?' · nejlepší':' → '+u.d(u.vals[l+1])),max?'':btn('u:'+u.id,u.cost[l]))}).join('');
+  h+='<h3>Schopnosti</h3>'+ABIL.map(a=>row(`data-ic="${a.icon}"`,a.n,a.d,btn('a:'+a.id,abCost(a)))).join('');
+  const y=scrollY;setHTML($('#v-shop'),h);scrollTo(0,y)}
+$('#v-shop').addEventListener('click',e=>{if(!G||G.over)return;const b=e.target.closest('[data-buy]');if(b)buy(b.dataset.buy)});
 function buy(key){const[k,id]=key.split(':');let cost;
   if(k==='f'){const f=food(id),l=G.lvl[id]||0;if(!l||l>=MAXLVL)return;cost=upCost(f,l);if(G.cash<cost)return;G.cash-=cost;G.lvl[id]=l+1;
-    const nx=FOODS[FOODS.indexOf(f)+1];if(l===1&&nx&&!G.lvl[nx.id]){G.lvl[nx.id]=1;G.stock[nx.id]=upv('restock');renderPlates();toast('Nový jídlo: '+nx.n)}else toast(f.n+' úroveň '+(l+1))}
-  if(k==='u'){const u=UPG.find(x=>x.id===id);cost=u.cost[G.up[id]];if(cost==null||G.cash<cost)return;G.cash-=cost;G.up[id]++;if(id==='tables')layoutTables();toast(u.n+' ✓')}
+    const nx=FOODS[FOODS.indexOf(f)+1];if(l===1&&nx&&!G.lvl[nx.id]){G.lvl[nx.id]=1;G.stock[nx.id]=upv('restock');renderPlates();toast('Nový jídlo na lístku: '+nx.n)}else toast(f.n+', úroveň '+(l+1))}
+  if(k==='u'){const u=UPG.find(x=>x.id===id);cost=u.cost[G.up[id]];if(cost==null||G.cash<cost)return;G.cash-=cost;G.up[id]++;if(id==='tables')layoutTables();toast(u.n+': hotovo')}
   if(k==='a'){const a=ABIL.find(x=>x.id===id);cost=abCost(a);if(G.cash<cost)return;G.cash-=cost;G.ab[id]=(G.ab[id]||0)+1;
     if(id==='happy')G.happyUntil=Date.now()+30000;if(id==='freeze')G.freezeUntil=Date.now()+20000;
     if(id==='fill'){for(const f of FOODS)if(G.lvl[f.id])G.stock[f.id]=(G.stock[f.id]||0)+10;updatePlates()}toast(a.n+'!')}
   renderShop();renderTop()}
 
-/* --- end --- */
 $('#g-quit').addEventListener('click',()=>{if(!G)return;if(G.mp&&mp&&!mp.host){mpLeave();stopGame();show('home');return}endGame()});
 function endGame(){if(!G||G.over)return;G.over=true;clearInterval(loop);
   if(G.mp&&mp){mpPush(true);if(mp.host)mp.ref.update({phase:'ended'}).catch(()=>{})}
-  $('#end-cash').textContent=fmt(G.cash);const s=G.stats;
-  setHTML($('#end-stats'),`<div class="scrap rowi lined" style="display:block;text-align:left">`+[['Správný odpovědi',s.ok],['Špatný odpovědi',s.bad],['Obsloužený zákazníci',s.served],['Odešlo naštvaných',s.left]].map(([a,b])=>`<div class="row" style="justify-content:space-between"><span>${a}</span><b>${b}</b></div>`).join('')+'</div>');
+  $('#end-cash').textContent=fmt(G.cash);if(!$('#end-coin').firstChild)$('#end-coin').append(iconArt('coin'));const s=G.stats;
+  setHTML($('#end-stats'),[['Správný odpovědi',s.ok],['Špatný odpovědi',s.bad],['Obsloužený hosti',s.served],['Odešlo naštvaných',s.left]].map(([a,b])=>`<div class="row" style="padding:6px 0"><span>${a}</span><span class="lead"></span><b class="rname" style="font-size:26px">${b}</b></div>`).join(''));
   $('#end-again').hidden=G.mp;renderEndBoard();show('end')}
 $('#end-again').addEventListener('click',()=>{if(lastCfg)startGame(lastCfg)});
 
-/* ================= multiplayer ================= */
 let RM=null,DB=null,mp=null;
-(async()=>{[RM,DB]=await Promise.all([cu('room'),cu('db')]);if(!(RM&&DB))$('#mp-note').textContent='Generování otázek a multiplayer fungujou jen na claude.ai.'})();
+(async()=>{[RM,DB]=await Promise.all([cu('room'),cu('db')]);if(!(RM&&DB))$('#mp-note').textContent='Otázky z poznámek a hra s kamarády fungujou jen na claude.ai.'})();
 const mpErrText=e=>(e&&e.code==='not_permitted')||(e&&/permi/i.test(e.message||''))?'Nemáš oprávnění. Majitel stránky ti musí dát přístup, kterej dovoluje interakci.':'Nepodařilo se připojit. Zkus to znovu.';
 const snapData=s=>{if(!s)return null;if(typeof s.data==='function'){if(s.exists===false)return null;return s.data()||null}if('exists' in s&&!s.exists)return null;return s.data!==undefined?s.data:s};
-async function ready(st){if(!(RM&&DB))[RM,DB]=await Promise.all([cu('room'),cu('db')]);if(!(RM&&DB)){st.textContent='Multiplayer funguje jen na claude.ai.';return false}return true}
+async function ready(st){if(!(RM&&DB))[RM,DB]=await Promise.all([cu('room'),cu('db')]);if(!(RM&&DB)){st.textContent='Hra s kamarády funguje jen na claude.ai.';return false}return true}
 async function hostCreate(cfg,name){const st=$('#setup-status');if(!await ready(st))return;
-  const code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');st.textContent='Zakládám hru…';
+  const code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');st.textContent='Zakládám…';
   try{await DB.doc('games/'+code).set({phase:'lobby',host:name,mode:cfg.mode,val:cfg.val,endsAt:0,set:cfg.set,t:Date.now()})}catch(e){st.textContent=mpErrText(e);return}
   mpEnter(code,name,true,st)}
 $('#join-go').addEventListener('click',async()=>{const st=$('#join-status'),name=$('#join-name').value.trim(),code=$('#join-code').value.trim().toUpperCase();
@@ -683,21 +539,20 @@ function onDoc(d){if(d.phase==='playing'&&!G)startGame({set:d.set,mode:d.mode,va
 const players=()=>mp?mp.peers.filter(p=>p.presence&&typeof p.presence.n==='string'):[];
 function renderLobby(){if(!mp)return;const d=mp.doc;
   $('#lobby-info').textContent=d?`${d.set.name} · ${d.mode==='time'?d.val+' min':'cíl '+fmt(d.val)} · zakládá ${d.host}`:'Načítám…';
-  const ps=players();setHTML($('#lobby-list'),ps.length?`<div class="scrap board" style="display:block">${ps.map(p=>`<div>${esc(p.presence.n)}${p.sameTab?' (ty)':''}${p.presence.h?' · zakladatel':''}</div>`).join('')}</div>`:'<p class="mut">Zatím nikdo.</p>');
+  const ps=players();setHTML($('#lobby-list'),ps.length?ps.map(p=>`<div class="row" style="padding:4px 0"><span class="rname">${esc(p.presence.n)}</span><span class="it mut small">${p.sameTab?'ty':''}${p.presence.h?' · zakladatel':''}</span></div>`).join(''):'<p class="it mut">Zatím nikdo.</p>');
   $('#lobby-start').hidden=!(mp.host&&d&&d.phase==='lobby')}
 $('#lobby-start').addEventListener('click',()=>{const d=mp&&mp.doc;if(!d)return;mp.ref.update({phase:'playing',endsAt:d.mode==='time'?Date.now()+d.val*60000+2000:0}).catch(e=>$('#lobby-status').textContent=mpErrText(e))});
 $('#lobby-leave').addEventListener('click',()=>{mpLeave();show('home')});
 function mpPush(force){if(!mp||!G)return;const now=Date.now();if(!force&&now-mp.lastPush<1000)return;mp.lastPush=now;mp.rm.presence({c:Math.floor(G.cash)}).catch(()=>{})}
 function checkGoal(){if(G&&!G.over&&G.mp&&G.mode==='goal'&&players().some(p=>+p.presence.c>=G.goal))endGame()}
 const ranking=()=>players().slice().sort((a,b)=>(+b.presence.c||0)-(+a.presence.c||0));
-function renderBoard(){if(!G||!G.mp)return;$('#g-board-in').innerHTML=ranking().slice(0,4).map((p,i)=>`<div>${i+1}. ${esc(p.presence.n)}${p.sameTab?' (ty)':''} · ${fmt(+p.presence.c||0)}</div>`).join('')}
+function renderBoard(){if(!G||!G.mp)return;$('#g-board').textContent=ranking().slice(0,4).map((p,i)=>`${i+1}. ${p.presence.n}${p.sameTab?' (ty)':''} ${fmt(+p.presence.c||0)}`).join('   ')}
 function renderEndBoard(){if(!G||!G.mp){setHTML($('#end-board'),'');return}
-  setHTML($('#end-board'),'<h2 style="font-size:28px;margin-top:18px">Pořadí</h2><div class="scrap board" style="display:block">'+ranking().map((p,i)=>`<div>${i+1}. ${esc(p.presence.n)}${p.sameTab?' (ty)':''} · ${fmt(p.sameTab?G.cash:+p.presence.c||0)}</div>`).join('')+'</div>')}
+  setHTML($('#end-board'),'<h3>Pořadí</h3>'+ranking().map((p,i)=>`<div class="row" style="padding:4px 0"><span>${i+1}. ${esc(p.presence.n)}${p.sameTab?' (ty)':''}</span><span class="lead"></span><b class="rname">${fmt(p.sameTab?G.cash:+p.presence.c||0)}</b></div>`).join(''))}
 function mpLeave(){if(!mp)return;const m=mp;mp=null;try{m.unPeers&&m.unPeers()}catch{}try{m.unDoc&&m.unDoc()}catch{}m.rm&&m.rm.leave().catch(()=>{})}
 
-/* ================= init ================= */
-$('#hero').append(heroGirl());
-hydrate(document.body);
+$('#hero').append(QA.heroGirl());{const t=document.createElement('div');t.className='htbl';t.append(QA.table());const c=document.createElement('div');c.className='hcup';c.append(QA.icon('cafe'));$('#hero').append(t,c)}
+inkify(document.body);
 }
 </script>
 </body>
